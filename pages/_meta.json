@@ -1,0 +1,24 @@
+{
+  "index": {
+    "type": "page",
+    "title": "pyXLMS"
+  },
+  "docs": {
+    "type": "page",
+    "title": "Documentation"
+  },
+  "api":{
+    "type": "page",
+    "title": "API ↗",
+    "href": "https://hgb-bin-proteomics.github.io/pyXLMS",
+    "newWindow": true
+  },
+  "about": {
+    "title": "About",
+    "type": "page"
+  },
+  "contact": {
+    "title": "Contact",
+    "type": "page"
+  }
+}
