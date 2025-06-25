@@ -1,7 +1,0 @@
-{
-  "index": "Introduction",
-  "setup": "Installation",
-  "parsers": "Result File Reading",
-  "transform": "Data Transformation",
-  "exporters": "Exporting Data"
-}
