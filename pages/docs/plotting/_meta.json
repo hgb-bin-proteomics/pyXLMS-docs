@@ -1,4 +1,5 @@
 {
   "index": "Available Figures and Plot Types",
-  "plot_score_distribution": "Plotting Score Distribution"
+  "plot_score_distribution": "Plotting Score Distribution",
+  "plot_target_decoy_distribution": "Plotting Target and Decoy Distribution"
 }
