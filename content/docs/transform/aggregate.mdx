@@ -1,0 +1,216 @@
+import { Callout } from 'nextra/components'
+
+# **Uniqueness and Aggregation**
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.4.2
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All data transformation functionality - including `unique()` and `aggregate()` - is available via the `transform` submodule. We also import the `parser` submodule here for reading result files.
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 20696.40it/s]
+    Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 33629.76it/s]
+```
+</Callout>
+
+We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
+
+
+```python copy
+csms = parser_result["crosslink-spectrum-matches"]
+xls = parser_result["crosslinks"]
+```
+
+For easier access we assign our crosslink-spectrum-matches to the variable `csms` and our crosslinks to the variable `xls`.
+
+## Unique Crosslink-Spectrum-Matches
+
+
+```python copy
+unique_csms = transform.unique(csms, score="higher_better")
+```
+
+We can get all unique crosslink-spectrum-matches by calling `transform.unique()` and passing the crosslink-spectrum-matches as the first argument. A crosslink-spectrum-match is considered unique if there are no other crosslink-spectrum-matches with the same spectrum file, scan number, crosslinked peptide sequences, and peptide crosslink positions. For any non-unique crosslink-spectrum-matches the one with the best score is retained. The parameter `score` defines if a higher score should be considered better (as in our case with `score="higher_better"`) or a lower score should be considered better, in which case `score="lower_better"` should be specified. This depends on the used crosslink search engine. You can read more about the `unique()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique).
+
+
+```python copy
+print(f"Number of read CSMs: {len(csms)}")
+print(f"Number of unique CSMs: {len(unique_csms)}")
+```
+<Callout emoji="✓">
+```
+    Number of read CSMs: 826
+    Number of unique CSMs: 826
+```
+</Callout>
+
+Because MS Annika only reports unique crosslink-spectrum-matches, filtering for unique crosslink-spectrum-matches does not do anything as the number of crosslink-spectrum-matches stays the same.
+
+## Unique Crosslinks
+
+
+```python copy
+unique_xls_by_peptide = transform.unique(xls, by="peptide", score="higher_better")
+```
+
+Similarly, we can get all unique crosslinks by calling `transform.unique()` and passing the crosslinks as the first argument. The parameter `by` controls what determines the uniqueness of a crosslink. Selecting `by="peptide"` means that a crosslink is considered unique if there are no other crosslinks with the same crosslinked peptide sequences and peptide crosslink positions. For any non-unique crosslinks the one with the best score is retained. The parameter `score` defines if a higher score should be considered better (as in our case with `score="higher_better"`) or a lower score should be considered better, in which case `score="lower_better"` should be specified. This depends on the used crosslink search engine. You can read more about the `unique()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique).
+
+
+```python copy
+print(f"Number of read crosslinks: {len(xls)}")
+print(
+    f"Number of unique crosslinks by peptide sequences and peptide crosslink positions: {len(unique_xls_by_peptide)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of read crosslinks: 300
+    Number of unique crosslinks by peptide sequences and peptide crosslink positions: 300
+```
+</Callout>
+
+Because MS Annika groups crosslinks by peptide sequences and peptide crosslink positions by default, selecting unique crosslinks `by="peptide"` does not change the number of our crosslinks because all of them are already unique.
+
+
+```python copy
+unique_xls_by_protein = transform.unique(xls, by="protein")
+```
+
+Alternatively, we can compare our crosslinks by looking at the associated protein crosslink positions by selecting `by="protein"`. This means that a crosslink is considered unique if there are no other crosslinks that connect the same two protein residues. Therefore, even if two crosslinks have different peptide pairs but connect the same protein residues, they will be considered the same.
+
+
+```python copy
+print(f"Number of read crosslinks: {len(xls)}")
+print(
+    f"Number of unique crosslinks by protein crosslink positions: {len(unique_xls_by_protein)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of read crosslinks: 300
+    Number of unique crosslinks by protein crosslink positions: 298
+```
+</Callout>
+
+Selecting unique crosslinks `by="protein"` reduces our crosslinks from 300 unique crosslinks _by peptide_ to 298 unique crosslinks _by protein_.
+
+## Aggregating Crosslink-Spectrum-Matches to Crosslinks
+
+
+```python copy
+aggregated_xls_by_peptide = transform.aggregate(
+    csms, by="peptide", score="higher_better"
+)
+```
+
+We can also aggregate crosslink-spectrum-matches to crosslinks by calling `transform.aggregate()` and passing the crosslink-spectrum-matches as the first argument. Similarly to `transform.unique()` the parameter `by` controls what determines the uniqueness of a crosslink. Selecting `by="peptide"` means that a crosslink is considered unique if there are no other crosslinks with the same crosslinked peptide sequences and peptide crosslink positions. For any non-unique crosslinks the one with the best score is retained. The parameter `score` defines if a higher score should be considered better (as in our case with `score="higher_better"`) or a lower score should be considered better, in which case `score="lower_better"` should be specified. This depends on the used crosslink search engine. You can read more about the `aggregate()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.aggregate).
+
+
+```python copy
+print(f"Number of read crosslinks: {len(xls)}")
+print(
+    f"Number of unique crosslinks by peptide sequences and peptide crosslink positions: {len(aggregated_xls_by_peptide)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of read crosslinks: 300
+    Number of unique crosslinks by peptide sequences and peptide crosslink positions: 300
+```
+</Callout>
+
+If we aggregate our crosslink-spectrum-matches `by="peptide"` we get exactly as many crosslinks as what we also read in from our MS Annika crosslink result. This is no surprise as MS Annika aggregates crosslink-spectrum-matches the same way as presented here.
+
+
+```python copy
+aggregated_xls_by_protein = transform.aggregate(csms, by="protein")
+```
+
+Alternatively, we can also aggregate our crosslink-spectrum-matches `by="protein"`. Which again means that a crosslink is considered unique if there are no other crosslinks that connect the same two protein residues. Therefore, even if two crosslinks have different peptide pairs but connect the same protein residues, they will be considered the same.
+
+
+```python copy
+print(f"Number of read crosslinks: {len(xls)}")
+print(
+    f"Number of aggregated crosslinks by protein crosslink positions: {len(unique_xls_by_protein)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of read crosslinks: 300
+    Number of aggregated crosslinks by protein crosslink positions: 298
+```
+</Callout>
+
+Because MS Annika aggregates crosslink-spectrum-matches based on peptide sequences and peptide crosslink positions by default, the number of aggregated crosslinks now differs slightly to the number of read MS Annika crosslinks.
+
+
+```python copy
+validated_xls = transform.validate(unique_xls_by_protein)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:  24%|█████████████████▋                                                       | 72/298 [00:00<?, ?it/s]
+```
+</Callout>
+
+Usually you want to re-validate your results after aggregation because aggregation does not conserve false-discovery-rate (FDR). For example, if you previously had crosslink-spectrum-matches at 1% FDR, then after aggregation you will have crosslinks at 1% crosslink-spectrum-match level FDR but want 1% crosslink level FDR (e.g., meaning that approximately 1% of your crosslinks are false positives). Therefore it is generally a good idea to validate again after aggregation, for this purpose we can use the `transform.validate()` function which you can read more about here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate).
+
+
+```python copy
+print(
+    f"Number of validated, aggregated crosslinks by protein crosslink positions above estimated 1% FDR: {len(validated_xls)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of validated, aggregated crosslinks by protein crosslink positions above estimated 1% FDR: 226
+```
+</Callout>
+
+After validation there are 226 aggregated crosslinks remaining that pass the 1% estimated FDR threshold.
+
+
+```python copy
+_ = transform.summary(validated_xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 226.0
+    Number of unique crosslinks by peptide: 226.0
+    Number of unique crosslinks by protein: 226.0
+    Number of intra crosslinks: 225.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 224.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 2.0
+    Minimum crosslink score: 52.92422323424151
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+Of the 226 aggregated and validated crosslinks 224 are target-target matches.
