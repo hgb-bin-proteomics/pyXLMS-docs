@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # **Plotting Peptide Pair Distribution**
 
 
@@ -6,9 +8,11 @@ from pyXLMS import __version__
 
 print(f"Installed pyXLMS version: {__version__}")
 ```
-```
+<Callout emoji="✓">
+```ansi
     Installed pyXLMS version: 1.3.0
 ```
+</Callout>
 
 
 ```python copy
@@ -26,10 +30,12 @@ parser_result = parser.read(
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 6324/6324 [00:00<00:00, 11442.10it/s]
     Reading MS Annika crosslinks...: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 3025/3025 [00:00<00:00, 20929.73it/s]
 ```
+</Callout>
 
 We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
 
@@ -77,8 +83,9 @@ fig, ax = plotting.plot_peptide_pair_distribution(
     figsize=(7.0, 4.0),
 )
 ```
+<Callout type="error">
 ```
-    ---------------------------------------------------------------------------
+    [41m---------------------------------------------------------------------------[0m
 
     TypeError                                 Traceback (most recent call last)
 
@@ -105,5 +112,10 @@ fig, ax = plotting.plot_peptide_pair_distribution(
 
     TypeError: Unsupported data type for input data! Parameter data has to be a list of crosslink-spectrum-match!
 ```
+</Callout>
 
-**The peptide pair distribution can only be plotted for crosslink-spectrum-matches since crosslinks are already aggregated by either peptide pair or protein position.** Calling `plot_peptide_pair_distribution` on a list of crosslinks will result in an error!
+> [!IMPORTANT]
+>
+> **The peptide pair distribution can only be plotted for crosslink-spectrum-matches since crosslinks are already aggregated by either peptide pair or protein position.**
+
+Calling `plot_peptide_pair_distribution` on a list of crosslinks will result in an error!

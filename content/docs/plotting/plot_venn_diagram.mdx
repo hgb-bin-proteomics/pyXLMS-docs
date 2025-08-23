@@ -1,17 +1,21 @@
+import { Callout } from 'nextra/components'
+
 # **Plotting Venn Diagrams**
 
 
-```python
+```python copy
 from pyXLMS import __version__
 
 print(f"Installed pyXLMS version: {__version__}")
 ```
+<Callout emoji="✓">
 ```
     Installed pyXLMS version: 1.1.2
 ```
+</Callout>
 
 
-```python
+```python copy
 from pyXLMS import pipelines
 from pyXLMS import plotting
 ```
@@ -19,7 +23,7 @@ from pyXLMS import plotting
 All plotting functionality is available via the `plotting` submodule. We also import the `pipelines` submodule here for reading crosslink-spectrum-match result files and doing some standard data transformations.
 
 
-```python
+```python copy
 %%capture output
 
 msannika = pipelines.pipeline(
@@ -47,7 +51,7 @@ We read crosslink-spectrum-matches from three different search engines (MS Annik
 We use the `%%capture` magic here to not display the information that is printed by `pipelines.pipeline()` in order to not clutter the notebook, feel free to disable this in your own run to see exactly what `pipelines.pipeline()` does!
 
 
-```python
+```python copy
 fig, ax = plotting.plot_venn_diagram(
     csms_msannika,
     csms_maxquant,
@@ -67,7 +71,7 @@ fig, ax = plotting.plot_venn_diagram(
 We can plot the 2-set venn diagram for MS Annika and MaxQuant crosslink-spectrum-matches by passing them as the first two arguments. You can control the labels and colors via the `labels` and `colors` parameters. The default figure size is 10 by 10 inches and does not need to be set explicitly, we just used a smaller one here for demonstration purposes. The `filename_prefix` parameter is also optional, if it is given the plot is saved four times: once without the title in `.png` and `.svg` format, and once with the title in `.png` and `.svg` format.
 
 
-```python
+```python copy
 fig, ax = plotting.plot_venn_diagram(
     csms_msannika,
     csms_maxquant,
