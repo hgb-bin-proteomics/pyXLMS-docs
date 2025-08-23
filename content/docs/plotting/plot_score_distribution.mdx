@@ -1,17 +1,20 @@
+import { Callout } from 'nextra/components'
+
 # **Plotting Score Distribution**
 
 
-```python
+```python copy
 from pyXLMS import __version__
 
 print(f"Installed pyXLMS version: {__version__}")
 ```
+<Callout emoji="✓">
 ```
     Installed pyXLMS version: 1.3.0
 ```
+</Callout>
 
-
-```python
+```python copy
 from pyXLMS import parser
 from pyXLMS import plotting
 ```
@@ -19,22 +22,24 @@ from pyXLMS import plotting
 All plotting functionality is available via the `plotting` submodule. We also import the `parser` submodule here for reading result files.
 
 
-```python
+```python copy
 parser_result = parser.read(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
     engine="MS Annika",
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 11471.12it/s]
     Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 18169.48it/s]
 ```
+</Callout>
 
 We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
 
 
-```python
+```python copy
 fig, ax = plotting.plot_score_distribution(
     parser_result["crosslink-spectrum-matches"],
     figsize=(7.0, 4.0),
@@ -48,10 +53,16 @@ fig, ax = plotting.plot_score_distribution(
     
 
 
-We can plot the score distribution for our crosslink-spectrum-matches by passing them as the first argument. **Please note that plotting a score distribution is only possible if all data have an associated score and target-decoy labels, otherwise the function will raise an exception!** The default figure size is 16 by 9 inches and does not need to be set explicitly, we just used a smaller one here for demonstration purposes. The `filename_prefix` parameter is also optional, if it is given the plot is saved four times: once without the title in `.png` and `.svg` format, and once with the title in `.png` and `.svg` format.
+We can plot the score distribution for our crosslink-spectrum-matches by passing them as the first argument.
+
+> [!IMPORTANT]
+>
+> **Please note that plotting a score distribution is only possible if all data have an associated score and target-decoy labels, otherwise the function will raise an exception!**
+
+The default figure size is 16 by 9 inches and does not need to be set explicitly, we just used a smaller one here for demonstration purposes. The `filename_prefix` parameter is also optional, if it is given the plot is saved four times: once without the title in `.png` and `.svg` format, and once with the title in `.png` and `.svg` format.
 
 
-```python
+```python copy
 fig, ax = plotting.plot_score_distribution(
     parser_result["crosslinks"],
     bins=50,

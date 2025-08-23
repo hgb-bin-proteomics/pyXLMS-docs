@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # Installation
 
 pyXLMS is a [python](https://www.python.org/) package, naturally it requires a [python installation](https://www.python.org/downloads/).
@@ -6,19 +8,19 @@ pyXLMS supports python version 3.7 and greater!
 ## Installation via PyPI
 
 pyXLMS is available on [PyPI](https://pypi.org/project/pyXLMS/) and can easily be installed via pip:
-```
+```bash copy
 pip install pyxlms
 ```
 
 ## Installation via GitHub
 
 Alternatively, you can install the latest stable version directly from [GitHub](https://github.com/hgb-bin-proteomics/pyXLMS):
-```
+```bash copy
 pip install git+https://github.com/hgb-bin-proteomics/pyXLMS.git
 ```
 
 _or the latest development version:_
-```
+```bash copy
 pip install git+https://github.com/hgb-bin-proteomics/pyXLMS.git@develop
 ```
 
@@ -29,7 +31,7 @@ After installation you can use pyXLMS in python like this:
 _This example shows reading of MS Annika crosslink-spectrum-matches and exporting_
 _them to xiFDR format for external validation._
 
-```python
+```python copy
 import pyXLMS
 pr = pyXLMS.parser.read(
     "data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.xlsx",
@@ -37,12 +39,15 @@ pr = pyXLMS.parser.read(
     crosslinker="DSS"
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 20731.70it/s]
 ```
-```python
+</Callout>
+```python copy
 _ = pyXLMS.transform.summary(pr)
 ```
+<Callout emoji="✓">
 ```
     Number of CSMs: 826.0
     Number of unique CSMs: 826.0
@@ -54,6 +59,7 @@ _ = pyXLMS.transform.summary(pr)
     Minimum CSM score: 1.11
     Maximum CSM score: 452.99
 ```
-```python
+</Callout>
+```python copy
 _ = pyXLMS.exporter.to_xifdr(pr["crosslink-spectrum-matches"], filename="msannika_CSMs_for_xiFDR.csv")
 ```

@@ -1,44 +1,51 @@
+import { Callout } from 'nextra/components'
+
 # **Reading MS Annika Result Files**
 
 
-```python
+```python copy
 from pyXLMS import __version__
 
 print(f"Installed pyXLMS version: {__version__}")
 ```
+<Callout emoji="✓">
 ```
     Installed pyXLMS version: 1.1.2
 ```
+</Callout>
 
 
-```python
+```python copy
 from pyXLMS import parser
 from pyXLMS import transform
 ```
 
 All functionality to parse crosslink-spectrum-matches (CSMs) and crosslinks (XLs) from MS Annika result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
 
-## **Reading MS Annika Result Files via `parser.read()`**
+## Reading MS Annika Result Files via `parser.read()`
 
 
-```python
+```python copy
 parser_result = parser.read(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt",
     engine="MS Annika",
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 7639.53it/s]
 ```
+</Callout>
 
 We can read any MS Annika result file using the `parser.read()` method and setting `engine="MS Annika"`. The method also requires us to specify the used crosslinker, in this case DSS was used (`crosslinker="DSS"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
 
 
-```python
+```python copy
 for k, v in parser_result.items():
     print(f"{k}: {type(v) if isinstance(v, list) else v}")
 ```
+<Callout emoji="✓">
 ```
     data_type: parser_result
     completeness: partial
@@ -46,15 +53,17 @@ for k, v in parser_result.items():
     crosslink-spectrum-matches: <class 'list'>
     crosslinks: None
 ```
+</Callout>
 
 The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
 
 As you can see from the `parser_result` the MS Annika result file contained CSMs. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`.
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
+<Callout emoji="✓">
 ```
     Number of CSMs: 826.0
     Number of unique CSMs: 826.0
@@ -66,15 +75,17 @@ _ = transform.summary(parser_result)
     Minimum CSM score: 1.11
     Maximum CSM score: 452.99
 ```
+</Callout>
 
 With the `transform.summary()` method we can also print out some summary statistics about our read CSMs. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
 
 
-```python
+```python copy
 sample_csm = parser_result["crosslink-spectrum-matches"][0]
 for k, v in sample_csm.items():
     print(f"{k}: {v}")
 ```
+<Callout emoji="✓">
 ```
     data_type: crosslink-spectrum-match
     completeness: full
@@ -103,29 +114,33 @@ for k, v in sample_csm.items():
     ion_mobility: 0.0
     additional_information: None
 ```
+</Callout>
 
 Here is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
 
 *****
 
 
-```python
+```python copy
 parser_result = parser.read(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_Crosslinks.xlsx",
     engine="MS Annika",
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika crosslinks...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 8801.27it/s]
 ```
+</Callout>
 
 We can also as easily read a crosslink result file, notice how this time we also read a Microsoft Excel file instead of a txt file and don't even have to change anything. This is because when a filename is given, the parser will automatically detect the corresponding extension and use the correct sub-method. This behaviour is controlled by the `format` parameter in the [MS Annika parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_msannika.read_msannika). More about that later...
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
+<Callout emoji="✓">
 ```
     Number of crosslinks: 300.0
     Number of unique crosslinks by peptide: 300.0
@@ -138,15 +153,17 @@ _ = transform.summary(parser_result)
     Minimum crosslink score: 1.11
     Maximum crosslink score: 452.99
 ```
+</Callout>
 
 Similarly, with the `transform.summary()` method we can also print out some summary statistics about our read crosslinks.
 
 
-```python
+```python copy
 sample_crosslink = parser_result["crosslinks"][0]
 for k, v in sample_crosslink.items():
     print(f"{k}: {v}")
 ```
+<Callout emoji="✓">
 ```
     data_type: crosslink
     completeness: full
@@ -164,13 +181,14 @@ for k, v in sample_crosslink.items():
     score: 119.83
     additional_information: None
 ```
+</Callout>
 
 Here is an example crosslink, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
 
 *****
 
 
-```python
+```python copy
 parser_result = parser.read(
     [
         "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt",
@@ -180,17 +198,20 @@ parser_result = parser.read(
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 6911.35it/s]
     Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 18167.65it/s]
 ```
+</Callout>
 
 It's also possible to read multiple files into one `parser_result`, this for example makes sense if you have crosslinks and crosslink-spectrum-matches from the same run.
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
+<Callout emoji="✓">
 ```
     Number of CSMs: 826.0
     Number of unique CSMs: 826.0
@@ -212,13 +233,14 @@ _ = transform.summary(parser_result)
     Minimum crosslink score: 1.11
     Maximum crosslink score: 452.99
 ```
+</Callout>
 
 If the `parser_result` contains both crosslinks and CSMs, summary statistics for both will be calculated by `transform.summary()`.
 
 *****
 
 
-```python
+```python copy
 parser_result = parser.read(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt",
     engine="MS Annika",
@@ -226,20 +248,23 @@ parser_result = parser.read(
     parse_modifications=False,
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 10655.56it/s]
 ```
+</Callout>
 
 We can also tell the parser to not parse modifications via `parse_modifications=False`, this might be useful if you don't care about post-translational-modifications, or if you have unknown modifications in your results that you would have to manually specify - _and you don't want to do that_.
 
 In case you want to parse modifications but have unknown modifications in your results, you have to set them via the `modifications` parameter that can be passed via `**kwargs` to `parser.read_msannika()`. More about that later...
 
 
-```python
+```python copy
 sample_csm = parser_result["crosslink-spectrum-matches"][0]
 for k, v in sample_csm.items():
     print(f"{k}: {v}")
 ```
+<Callout emoji="✓">
 ```
     data_type: crosslink-spectrum-match
     completeness: partial
@@ -268,47 +293,53 @@ for k, v in sample_csm.items():
     ion_mobility: 0.0
     additional_information: None
 ```
+</Callout>
 
 Notice that this time the fields `alpha_modifications` and `beta_modifications` are empty (`None`) for our sample CSM.
 
 *****
 
 
-```python
+```python copy
 parser_result = parser.read(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
     engine="MS Annika",
     crosslinker="DSS",
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 6478.03it/s]
     Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 10331.48it/s]
 ```
+</Callout>
 
 Last but not least you can also directly read a `pdResult` from Proteome Discoverer which will automatically read all CSMs and crosslinks detected with MS Annika.
 
 *****
 
-## **Reading MS Annika Result Files via `parser.read_msannika()`**
+## Reading MS Annika Result Files via `parser.read_msannika()`
 
 
-```python
+```python copy
 parser_result = parser.read_msannika(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt"
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 5919.43it/s]
 ```
+</Callout>
 
 We can also read any MS Annika result file using the `parser.read_msannika()` method which allows a more nuanced control over reading MS Annika result files - even though theoretically everything can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_msannika()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_msannika.read_msannika).
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
-
+<Callout emoji="✓">
+```
     Number of CSMs: 826.0
     Number of unique CSMs: 826.0
     Number of intra CSMs: 803.0
@@ -318,17 +349,18 @@ _ = transform.summary(parser_result)
     Number of decoy-decoy CSMs: 1.0
     Minimum CSM score: 1.11
     Maximum CSM score: 452.99
-    
+```
+</Callout>
 
 *****
 
 
-```python
+```python copy
 from pyXLMS.constants import MODIFICATIONS
 
 MODIFICATIONS
 ```
-
+<Callout emoji="✓">
 ```
     {'Carbamidomethyl': 57.021464,
      'Oxidation': 15.994915,
@@ -342,17 +374,18 @@ MODIFICATIONS
      'DSBSO': 308.03883,
      'PhoX': 209.97181}
 ```
+</Callout>
 
 
 By default the MS Annika parser considers all modifications that are in `constants.MODIFICATIONS` as shown above for **pyXLMS version 1.1.1** - a full list of default modifications is given here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.constants.MODIFICATIONS).
 
 
-```python
+```python copy
 my_mods = dict(MODIFICATIONS)
 my_mods["Methyl"] = 14.01565
 my_mods
 ```
-
+<Callout emoji="✓">
 ```
     {'Carbamidomethyl': 57.021464,
      'Oxidation': 15.994915,
@@ -367,27 +400,31 @@ my_mods
      'PhoX': 209.97181,
      'Methyl': 14.01565}
 ```
+</Callout>
 
 
 If you have any additional modifications in your result file(s) the parser needs to know about them, which is done via the `modifications` parameter that allows for passing a custom dictionary of modifications. It is usually a good idea to base this custom dictionary on `constants.MODIFICATIONS` and add your modifications after, as shown above for methylation.
 
 
-```python
+```python copy
 parser_result = parser.read_msannika(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt",
     modifications=my_mods,
 )
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 8056.97it/s]
 ```
+</Callout>
 
 You can then pass the full list of expected modifications `my_mods` via the `modifications` parameter.
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
+<Callout emoji="✓">
 ```
     Number of CSMs: 826.0
     Number of unique CSMs: 826.0
@@ -399,27 +436,31 @@ _ = transform.summary(parser_result)
     Minimum CSM score: 1.11
     Maximum CSM score: 452.99
 ```
+</Callout>
 
 *****
 
 
-```python
+```python copy
 with open(
     "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_Crosslinks.txt", "r"
 ) as f:
     parser_result = parser.read_msannika(f, format="txt")
     f.close()
 ```
+<Callout emoji="✓">
 ```
     Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 24124.14it/s]
 ```
+</Callout>
 
 The `format` parameter is necessary when files are directly read from a file-stream because the format then cannot be automatically be inferred, such as in the case above. Please do note that reading of pdResult files from a file-stream is not supported. The `format` parameter accepts the following values: `"auto"`, `"csv"`, `"txt"`, `"tsv"`, `"xlsx"`, `"pdresult"`.
 
 
-```python
+```python copy
 _ = transform.summary(parser_result)
 ```
+<Callout emoji="✓">
 ```
     Number of crosslinks: 300.0
     Number of unique crosslinks by peptide: 300.0
@@ -432,6 +473,7 @@ _ = transform.summary(parser_result)
     Minimum crosslink score: 1.11
     Maximum crosslink score: 452.99
 ```
+</Callout>
 
 *****
 
