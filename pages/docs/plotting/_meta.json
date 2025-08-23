@@ -1,5 +1,6 @@
 {
   "index": "Available Figures and Plot Types",
   "plot_score_distribution": "Plotting Score Distribution",
-  "plot_target_decoy_distribution": "Plotting Target and Decoy Distribution"
+  "plot_target_decoy_distribution": "Plotting Target and Decoy Distribution",
+  "plot_venn_diagram": "Plotting Venn Diagrams"
 }
