@@ -49,6 +49,7 @@ export default async function RootLayout({ children }) {
           docsRepositoryBase="https://github.com/michabirklbauer/pyXLMS-docs/tree/master"
           footer={footer}
           // ... Your additional layout options
+          sidebar={{ defaultMenuCollapseLevel: 1 }}
         >
           {children}
         </Layout>
