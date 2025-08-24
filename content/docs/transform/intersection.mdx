@@ -1,0 +1,291 @@
+import { Callout } from 'nextra/components'
+
+# **Intersections of Crosslinks and Crosslink-Spectrum-Matches**
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.4.2
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import pipelines
+from pyXLMS import transform
+```
+
+The `intersection` function is available via the `transform` submodule. We also import the `pipelines` submodule here for reading crosslink-spectrum-match result files and doing some standard data transformations.
+
+
+```python copy
+%%capture output
+
+msannika = pipelines.pipeline(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.txt",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+csms_msannika = msannika["crosslink-spectrum-matches"]
+
+maxquant = pipelines.pipeline(
+    "../../data/maxquant/run1/crosslinkMsms.txt", engine="MaxQuant", crosslinker="DSS"
+)
+csms_maxquant = maxquant["crosslink-spectrum-matches"]
+
+plink = pipelines.pipeline(
+    "../../data/plink2/Cas9_plus10_2024.06.20.filtered_cross-linked_spectra.csv",
+    engine="pLink",
+    crosslinker="DSS",
+)
+csms_plink = plink["crosslink-spectrum-matches"]
+```
+
+We read crosslink-spectrum-matches from three different search engines (MS Annika, MaxQuant, pLink) that searched the same RAW file using `pipelines.pipepline()`. Additionally, the pipeline will automatically filter for unique crosslink-spectrum-matches, validate them for estimated 1% FDR and only keep target-target hits. You can read more about the pipeline here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.pipelines.pipeline).
+
+We use the `%%capture` magic here to not display the information that is printed by `pipelines.pipeline()` in order to not clutter the notebook, feel free to disable this in your own run to see exactly what `pipelines.pipeline()` does!
+
+
+```python copy
+crosslinks_msannika = transform.aggregate(csms_msannika, by="peptide")
+crosslinks_maxquant = transform.aggregate(csms_maxquant, by="peptide")
+crosslinks_plink = transform.aggregate(csms_plink, by="peptide")
+```
+
+We aggregate our crosslink-spectrum-matches to crosslinks by peptide sequence and peptide crosslink position using `transform.aggregate()`. You can read more about the aggregate methode here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.aggregate).
+
+
+```python copy
+print(
+    f"Number of MS Annika crosslinks validated at 1% CSM FDR: {len(crosslinks_msannika)}"
+)
+print(
+    f"Number of MaxQuant crosslinks validated at 1% CSM FDR: {len(crosslinks_maxquant)}"
+)
+print(f"Number of pLink crosslinks validated at 1% CSM FDR: {len(crosslinks_plink)}")
+```
+<Callout emoji="✓">
+```
+    Number of MS Annika crosslinks validated at 1% CSM FDR: 235
+    Number of MaxQuant crosslinks validated at 1% CSM FDR: 226
+    Number of pLink crosslinks validated at 1% CSM FDR: 252
+```
+</Callout>
+
+We can directly access how many aggregated crosslinks we created by checking the length of the resulting lists. Please note that these crosslinks are validated only at 1% crosslink-spectrum-match-level FDR and not at crosslink-level FDR. FDR at crosslink-level might be higher than 1%!
+
+
+```python copy
+crosslinks_intersection = transform.intersection(
+    data_a=crosslinks_msannika,
+    data_b=crosslinks_maxquant,
+    use="better_score",
+    by="peptide",
+)
+```
+
+We can now create the intersection of our crosslinks from MS Annika and our crosslinks from MaxQuant using `transform.intersection()`. Parameters `data_a` and `data_b` are required and need to be lists of crosslinks or crosslink-spectrum-matches. We also pass two additional parameters - namely `use` and `by` - to the function which control how the intersection is calculated. Parameter `use="better_score"` denotes that we want to have the crosslink with the better score if it is found by both MS Annika and MaxQuant. Alternative options are `use="data_a"` or `use="data_b"` which would either return the crosslink from the MS Annika list, or the crosslink from the MaxQuant list. Parameter `by` controls how crosslinks are compared, selecting `by="peptide"` means two crosslinks are considered the same if their peptide sequences are the same and their peptide crosslink positions are the same. The other option would be `by="protein"` which would compare crosslinks based on their protein crosslink positions. This parameter is ignored for intersections of crosslink-spectrum-matches which are compared based on their peptide sequences, their peptide crosslink positions, and their corresponding spectrum files and scan numbers. You can read more about the intersection method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.intersection.intersection).
+
+
+```python copy
+print(f"Number of crosslinks in the intersection: {len(crosslinks_intersection)}")
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks in the intersection: 206
+```
+</Callout>
+
+We can see that our intersection now contains 206 crosslinks which are identified by both MS Annika and MaxQuant.
+
+
+```python copy
+crosslinks_intersection[0]
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'full',
+     'alpha_peptide': 'EKIEK',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['Cas9'],
+     'alpha_proteins_crosslink_positions': [443],
+     'alpha_decoy': False,
+     'beta_peptide': 'MDGTEELLVKLNR',
+     'beta_peptide_crosslink_position': 10,
+     'beta_proteins': ['Cas9'],
+     'beta_proteins_crosslink_positions': [396],
+     'beta_decoy': False,
+     'crosslink_type': 'intra',
+     'score': 240.09,
+     'additional_information': {'Proteins1': 'Cas9',
+      'Proteins2': 'Cas9',
+      'Delta score': 240.09}}
+```
+</Callout>
+
+
+As an example, this would be the first crosslink in the intersection.
+
+
+```python copy
+crosslinks_intersection = transform.intersection(
+    crosslinks_intersection, crosslinks_plink
+)
+```
+
+We can also intersect more than two lists of crosslinks by repeatedly calling `transform.intersection()` on its result or itself. This time we also omit all optional parameters because we were using the defaults anyway. The result of this operation will be the intersection of crosslinks from MS Annika, MaxQuant, and pLink.
+
+
+```python copy
+print(f"Number of crosslinks in the intersection: {len(crosslinks_intersection)}")
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks in the intersection: 203
+```
+</Callout>
+
+Because there is a big overlap between MS Annika, MaxQuant, and pLink, our intersection only shrunk by three crosslinks down to 203 crosslinks in total which are identified accross all three crosslink search engines.
+
+
+```python copy
+csms_intersection = transform.intersection(csms_msannika, csms_maxquant)
+```
+<Callout type="warning">
+```
+    C:\Users\micha.birklbauer\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\transform\intersection.py:261: RuntimeWarning: Creating intersection of crosslink-spectrum-matches. Be sure that this makes sense for your data!
+      warnings.warn(
+```
+</Callout>
+
+Creating the intersection of two or more lists of crosslink-spectrum-matches works the same way - however, usually this is not what you want! The intersection of crosslink-spectrum-matches mostly only makes sense if you search the same mass spectrometry file several times with the same crosslink search engine, for example to identify the best search parameters. For the sake of demonstrating the functionality of pyXLMS we calculate the intersection here anyway. Note that calculating the intersection for crosslink-spectrum-matches will raise a warning unless you specifically set parameter `verbose=0`.
+
+
+```python copy
+print(
+    f"Number of crosslink-spectrum-matches in the intersection: {len(csms_intersection)}"
+)
+```
+<Callout emoji="✓">
+```
+    Number of crosslink-spectrum-matches in the intersection: 0
+```
+</Callout>
+
+As we can see the number of crosslink-spectrum-matches in the intersection is zero. This is because MS Annika reports the spectrum file name with the file extension while MaxQuant does not, as demonstrated below:
+
+
+```python copy
+csms_msannika[0]["spectrum_file"]
+```
+<Callout emoji="✓">
+```
+    'XLpeplib_Beveridge_QEx-HFX_DSS_R1.raw'
+```
+</Callout>
+
+```python copy
+csms_maxquant[0]["spectrum_file"]
+```
+<Callout emoji="✓">
+```
+    'XLpeplib_Beveridge_QEx-HFX_DSS_R1'
+```
+</Callout>
+
+
+Even if two crosslink-spectrum-matches had the same peptide sequences, peptide crosslink positions and the same scan number, they would not be considered the same because they do not have the same `spectrum_file` string because of how MS Annika and MaxQuant parse the spectrum file name. This highlights that special care needs to be put into creating the intersection of crosslink-spectrum-matches. Usually you would want to aggregate crosslink-spectrum-matches before, as we demonstrated previously with `transform.aggregate()`.
+
+
+```python copy
+csms_intersection = transform.intersection(csms_maxquant, csms_plink, verbose=0)
+len(csms_intersection)
+```
+<Callout emoji="✓">
+```
+    643
+```
+</Callout>
+
+
+Because both MaxQuant and pLink report the spectrum file name without a file extension, we actually get 643 crosslink-spectrum-matches that have the same peptide sequences, the same peptide crosslink positions, the same associated spectrum file names and scan numbers, and are found by both MaxQuant and pLink.
+
+
+```python copy
+csms_intersection[0]
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink-spectrum-match',
+     'completeness': 'partial',
+     'alpha_peptide': 'SKLVSDFR',
+     'alpha_modifications': {2: ('DSS', 138.06808)},
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['Cas9'],
+     'alpha_proteins_crosslink_positions': [965],
+     'alpha_proteins_peptide_positions': [964],
+     'alpha_score': 120.28693747926198,
+     'alpha_decoy': False,
+     'beta_peptide': 'SKLVSDFR',
+     'beta_modifications': {2: ('DSS', 138.06808)},
+     'beta_peptide_crosslink_position': 2,
+     'beta_proteins': ['Cas9'],
+     'beta_proteins_crosslink_positions': [965],
+     'beta_proteins_peptide_positions': [964],
+     'beta_score': 120.28693747926198,
+     'beta_decoy': False,
+     'crosslink_type': 'intra',
+     'score': 120.29,
+     'spectrum_file': 'XLpeplib_Beveridge_QEx-HFX_DSS_R1',
+     'scan_nr': 15350,
+     'charge': 3,
+     'retention_time': None,
+     'ion_mobility': None,
+     'additional_information': {'Proteins1': 'Cas9',
+      'Proteins2': 'Cas9',
+      'Delta score': 120.29}}
+```
+</Callout>
+
+
+As an example, this would be the first crosslink-spectrum-match in the intersection.
+
+
+```python copy
+csms_intersection = transform.intersection(csms_msannika, csms_maxquant, verbose=2)
+```
+<Callout type="error">
+```
+    ---------------------------------------------------------------------------
+
+    RuntimeError                              Traceback (most recent call last)
+
+    Cell In[17], line 1
+    ----> 1 csms_intersection = transform.intersection(csms_msannika, csms_maxquant, verbose=2)
+    
+
+    File ~\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\transform\intersection.py:267, in intersection(data_a, data_b, use, by, score, verbose)
+        261     warnings.warn(
+        262         RuntimeWarning(
+        263             "Creating intersection of crosslink-spectrum-matches. Be sure that this makes sense for your data!"
+        264         )
+        265     )
+        266 elif verbose == 2:
+    --> 267     raise RuntimeError(
+        268         "Can't create intersection of crosslink-spectrum-matches for verbose level 2!"
+        269     )
+        270 csms_a = dict()
+        271 for csm in unique_a:
+    
+
+    RuntimeError: Can't create intersection of crosslink-spectrum-matches for verbose level 2!
+```
+</Callout>
+
+Trying to create an intersection of crosslink-spectrum-matches at verbose level 2 will result in a `RuntimeError`. This is a safety measure.
