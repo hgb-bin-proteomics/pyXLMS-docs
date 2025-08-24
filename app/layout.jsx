@@ -7,7 +7,10 @@ export const metadata = {
   // Define your metadata here
   // For more information on metadata API, see: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
   title: 'pyXLMS',
-  description: 'User guide and documentation for pyXLMS'
+  description: 'User guide and documentation for pyXLMS',
+  authors: [{ name: 'Micha' }, { name: 'Birklbauer', url: 'https://github.com/michabirklbauer' }],
+  creator: 'Micha Birklbauer',
+  publisher: 'Micha Birklbauer'
 }
 
 const navbar = (
