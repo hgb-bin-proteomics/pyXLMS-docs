@@ -7,7 +7,10 @@ export const metadata = {
   // Define your metadata here
   // For more information on metadata API, see: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
   title: 'pyXLMS',
-  description: 'User guide and documentation for pyXLMS'
+  description: 'User guide and documentation for pyXLMS',
+  authors: [{ name: 'Micha' }, { name: 'Birklbauer', url: 'https://github.com/michabirklbauer' }],
+  creator: 'Micha Birklbauer',
+  publisher: 'Micha Birklbauer'
 }
 
 const navbar = (
@@ -46,6 +49,7 @@ export default async function RootLayout({ children }) {
           docsRepositoryBase="https://github.com/michabirklbauer/pyXLMS-docs/tree/master"
           footer={footer}
           // ... Your additional layout options
+          sidebar={{ defaultMenuCollapseLevel: 1 }}
         >
           {children}
         </Layout>
