@@ -17,7 +17,7 @@ const navbar = (
   <Navbar
     logo={
       <>
-        <img src="https://github.com/hgb-bin-proteomics/pyXLMS/raw/master/docs/logo/logo.png" width="48" style={{padding: '0px 10px 0px 0px'}}/>
+        <img src="/logo.png" width="48" height="48" style={{padding: '0px 10px 0px 0px'}}/>
         <h1>pyXLMS</h1>
       </>
     }
