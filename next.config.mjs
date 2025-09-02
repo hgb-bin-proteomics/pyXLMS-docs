@@ -8,8 +8,9 @@ const withNextra = nextra({
 // Export the final Next.js config with Nextra included
 export default withNextra({
   // ... Add regular Next.js options here
-  basePath: process.env.PAGES_BASE_PATH,
-  assetPrefix: "https://hgb-bin-proteomics.github.io/pyXLMS-docs",
+  // Static Export -> see https://nextjs.org/docs/app/getting-started/deploying#static-export
+  //basePath: process.env.PAGES_BASE_PATH,
+  //assetPrefix: "https://hgb-bin-proteomics.github.io/pyXLMS-docs",
   images: { unoptimized: true },
   output: 'export',
   distDir: 'out',
