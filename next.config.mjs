@@ -10,7 +10,7 @@ export default withNextra({
   // ... Add regular Next.js options here
   // Static Export -> see https://nextjs.org/docs/app/getting-started/deploying#static-export
   //basePath: process.env.PAGES_BASE_PATH,
-  //assetPrefix: "https://hgb-bin-proteomics.github.io/pyXLMS-docs",
+  //assetPrefix: 'https://hgb-bin-proteomics.github.io/pyXLMS-docs',
   //images: { unoptimized: true },
   //output: 'export',
   //distDir: 'out',
