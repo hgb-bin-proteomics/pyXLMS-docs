@@ -2,7 +2,7 @@ name: Deploy Next.js site to Pages
 # Taken from https://github.com/nextjs/deploy-github-pages
 
 on:
-  # Runs on pushes targeting the main branch
+  # Runs on pushes targeting the master branch
   #push:
   #  branches:
   #    - master
