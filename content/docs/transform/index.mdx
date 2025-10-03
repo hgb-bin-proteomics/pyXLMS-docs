@@ -1,3 +1,36 @@
-# Available Transformations
+# Available Data Transformations
 
-WIP transformations intro
+pyXLMS currently features several different functions to summarize, validate, and transform your data:
+
+- [Result summaries, dataframes, and utility functions](/docs/transform/summary_and_util)
+- [Uniqueness and aggregation](/docs/transform/aggregate)
+- [False-Discovery-Rate estimation and validation](/docs/transform/validate)
+- [Filtering](/docs/transform/filter)
+- [Annotation of protein accessions and protein crosslink positions](/docs/transform/reannotate_positions)
+- [Intersections of results](/docs/transform/intersection)
+
+## API Summary
+
+Here's a quick summary of the available functions, their page links and their API documentations:
+
+| Function Name                                  | Page                                         | API Docs |
+|:-----------------------------------------------|:--------------------------------------------:|:--------:|
+| `transform.aggregate()`                        | [link](/docs/transform/aggregate)            | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.aggregate) |
+| `transform.unique()`                           | [link](/docs/transform/aggregate)            | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique) |
+| `transform.filter_crosslink_type()`            | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.filter.filter_crosslink_type) |
+| `transform.filter_peptide_pair_distribution()` | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.filter.filter_peptide_pair_distribution) |
+| `transform.filter_protein_distribution()`      | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.filter.filter_protein_distribution) |
+| `transform.filter_proteins()`                  | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.filter.filter_proteins) |
+| `transform.filter_target_decoy()`              | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.filter.filter_target_decoy) |
+| `transform.from_dataframe()`                   | [link](/docs/transform/summary_and_util)     | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.from_dataframe.from_dataframe) |
+| `transform.intersection()`                     | [link](/docs/transform/intersection)         | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.intersection.intersection) |
+| `transform.fasta_title_to_accession()`         | [link](/docs/transform/reannotate_positions) | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.fasta_title_to_accession) |
+| `transform.reannotate_positions()`             | [link](/docs/transform/reannotate_positions) | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.reannotate_positions) |
+| `transform.summary()`                          | [link](/docs/transform/summary_and_util)     | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary) |
+| `transform.targets_only()`                     | [link](/docs/transform/filter)               | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.targets_only.targets_only) |
+| `transform.to_dataframe()`                     | [link](/docs/transform/summary_and_util)     | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.to_dataframe.to_dataframe) |
+| `transform.to_proforma()`                      | [link](/docs/transform/summary_and_util)     | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.to_proforma.to_proforma) |
+| `transform.assert_data_type_same()`            |                                              | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.util.assert_data_type_same) |
+| `transform.get_available_keys()`               |                                              | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.util.get_available_keys) |
+| `transform.modifications_to_str()`             |                                              | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.util.modifications_to_str) |
+| `transform.validate()`                         | [link](/docs/transform/validate)             | [link](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate) |

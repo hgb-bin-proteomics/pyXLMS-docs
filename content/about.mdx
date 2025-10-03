@@ -1,3 +1,56 @@
+import Image from 'next/image'
+
 # About
 
-pyXLMS
+<div style={{ textAlign: 'justify' }}>
+
+<Image src="/logo_padded_shadow.png" alt="pyXLMS logo" align="left" width={200} height={200} style={{padding: '5px 20px 10px 0px',}}/>
+
+**pyXLMS** is a python package and web application with graphical user interface that aims to simplify and streamline the intermediate step of
+connecting crosslink search engine results with down-stream analysis tools, enabling researchers even without bioinformatics knowledge to
+conduct in-depth crosslink analyses and shifting the focus from data transformation to data interpretation and therefore gaining biological
+insight. Currently pyXLMS supports input from seven different crosslink search engines:
+[MaxLynx (part of MaxQuant)](https://www.maxquant.org/),
+[MeroX](https://www.stavrox.com/),
+[MS Annika](https://github.com/hgb-bin-proteomics/MSAnnika),
+[pLink 2 and pLink 3](http://pfind.ict.ac.cn/se/plink/),
+[Scout](https://github.com/diogobor/Scout),
+[xiSearch](https://www.rappsilberlab.org/software/xisearch/) and [xiFDR](https://www.rappsilberlab.org/software/xifdr/),
+[XlinkX](https://docs.thermofisher.com/r/XlinkX-3.2-Quick-Start-Guide/),
+as well as the [mzIdentML format](https://www.psidev.info/mzidentml)
+of the HUPO Proteomics Standards Initiative, and a well-documented and
+[human-readable custom tabular format](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/format.md).
+Down-stream analysis is facilitated by functionality that is directly available within pyXLMS such as validation, annotation, aggregation, filtering, and visualization - and [much more](https://hgb-bin-proteomics.github.io/pyXLMS/modules.html) - of crosslink-spectrum-matches and crosslinks. In addition, the data can easily be exported to the required data format of the various available down-stream analysis tools such as
+[xiNET](https://crosslinkviewer.org/index.php),
+[xiVIEW](https://www.xiview.org/index.php),
+[xiFDR](https://www.rappsilberlab.org/software/xifdr/),
+[XlinkDB](https://xlinkdb.gs.washington.edu/xlinkdb/),
+[xlms-tools](https://gitlab.com/topf-lab/xlms-tools),
+pyMOL (via [pyXlinkViewer](https://github.com/BobSchiffrin/PyXlinkViewer)),
+ChimeraX (via [XMAS](https://github.com/ScheltemaLab/ChimeraX_XMAS_bundle)),
+or [IMP-X-FDR](https://github.com/vbc-proteomics-org/imp-x-fdr).
+
+</div>
+
+## Citing
+
+<br/>
+<div style={{ textAlign: 'justify' }}>
+
+If you are using pyXLMS, please cite as described in our [GitHub repository](https://github.com/hgb-bin-proteomics/pyXLMS#citing).
+
+</div>
+
+## Acknowledgements
+
+<br/>
+<div style={{ textAlign: 'justify' }}>
+
+pyXLMS has been mainly developed by _Micha J. Birklbauer_;
+_Sabrina Kaser_ and _Louise M. Buur_ contributed code, wrote documentation, and tested pyXLMS;
+_Fränze Müller_ and _Manuel Matzinger_ aided in conceptualization, provided data, gave feedback, and tested pyXLMS;
+_Martina A. Höllwarth_ and _Dennis Dannecker_ gave feedback and tested pyXLMS;
+_Manuel Matzinger_, _Karl Mechtler_, and _Viktoria Dorfer_ acquired funding for the project;
+_Melanie E. Birklbauer_ designed the logo for pyXLMS and provided emotional support;
+
+</div>

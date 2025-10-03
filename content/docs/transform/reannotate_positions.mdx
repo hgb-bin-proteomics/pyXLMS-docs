@@ -1,0 +1,412 @@
+import { Callout } from 'nextra/components'
+
+# **\[Re-\]Annotating Crosslinked Protein Positions**
+
+If your crosslink-spectrum-matches or crosslinks have incorrect or missing protein labels/protein crosslink positions you might want to \[re-\]annotate them for down-stream analysis since most tools need that information. The examples below show how to do that with the pyXLMS function `transform.reannotate_positions()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.reannotate_positions)\].
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.2
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All data transformation functionality - including `reannotate_positions()` to (re-)annotate crosslinked protein positions - is available via the `transform` submodule. We also import the `parser` submodule here for reading result files.
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 21043.24it/s]
+    Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 37465.87it/s]
+```
+</Callout>
+
+We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
+
+
+```python copy
+csms = parser_result["crosslink-spectrum-matches"]
+xls = parser_result["crosslinks"]
+```
+
+For easier access we assign our crosslink-spectrum-matches (CSMs) to the variable `csms` and our crosslinks to the variable `xls`.
+
+## Requirements
+
+\[Re-\]Annotation requires a FASTA file \[[1](https://en.wikipedia.org/wiki/FASTA_format), [2](https://blast.ncbi.nlm.nih.gov/doc/blast-topics/)\] (from here on also denoted as `.fasta` or fasta) as input. FASTA headers need to follow the [UniProtKB](https://www.uniprot.org/) standard formatting (as described [here](https://www.uniprot.org/help/fasta-headers)) otherwise annotation may not work properly (see also [➡️ Advanced Usage](#advanced-usage)). The minimal requirement for FASTA headers is `db|identifier|entry`.
+
+> [!IMPORTANT]
+>
+> **\[Re-\]Annotation of crosslink-spectrum-matches, crosslinks, and `parser_results` works exactly the same, as demonstrated by the examples below.**
+
+## [Re-]Annotating Crosslink-Spectrum-Matches
+
+
+```python copy
+proteins = transform.filter_protein_distribution(csms)
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'sp'])
+```
+</Callout>
+
+
+Our original CSMs have incomplete protein annotations: while `Cas9` is correctly annotated, `sp` refers to a group of contaminant proteins for which the name has not been correctly parsed from the fasta file because it was not in standard UniProtKB format.
+
+
+```python copy
+csms = transform.targets_only(csms)
+```
+
+> [!IMPORTANT]
+>
+> **Before we can \[re-\]annotate we have to filter for target matches, because we cannot annotate decoy matches! Search engines generate decoys differently and therefore it is often impossible to map decoy peptides back to their proteins based on their sequence!**
+
+
+```python copy
+csms = transform.reannotate_positions(csms, fasta="../../data/_fasta/Cas9_plus10.fasta")
+```
+<Callout emoji="✓">
+```
+    Annotation crosslink-spectrum-matches...: 100%|█████████████████████████████████████████████████████████████████| 786/786 [00:00<00:00, 55547.14it/s]
+```
+</Callout>
+
+We can then re-annotate the corresponding protein accessions and protein crosslink positions using the function `transform.reannotate_positions()` and passing the CSMs as the first argument and the fasta file as the second argument or via the `fasta` parameter. You can read more about the `reannotate_position()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.reannotate_positions).
+
+
+```python copy
+print(type(csms), type(csms[0]), csms[0]["data_type"])
+```
+<Callout emoji="✓">
+```
+    <class 'list'> <class 'dict'> crosslink-spectrum-match
+```
+</Callout>
+
+Since we passed a list of CSMs to `reannotate_positions()` the function also returned a list of CSMs (with re-annotated protein accessions and crosslink positions) back!
+
+
+```python copy
+proteins = transform.filter_protein_distribution(csms)
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'K1C15_SHEEP', 'AMYS_HUMAN', 'SRPP_HEVBR', 'CAH1_HUMAN', 'CTRB_BOVIN', 'OVAL_CHICK', 'RETBP_HUMAN'])
+```
+</Callout>
+
+
+If we now look at our proteins, we see that our `sp` contaminant group has been replaced with the correct corresponding proteins instead.
+
+*****
+
+## [Re-]Annotating Crosslinks
+
+
+```python copy
+proteins = transform.filter_protein_distribution(xls)
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'sp'])
+```
+</Callout>
+
+
+Similarly, our original crosslinks have the same incomplete protein annotations: while `Cas9` is correctly annotated, `sp` refers to a group of contaminant proteins for which the name has not been correctly parsed from the fasta file because it was not in standard UniProtKB format.
+
+
+```python copy
+xls = transform.targets_only(xls)
+```
+
+> [!IMPORTANT]
+>
+> **Before we can \[re-\]annotate we have to filter for target matches, because we cannot annotate decoy matches! Search engines generate decoys differently and therefore it is often impossible to map decoy peptides back to their proteins based on their sequence!**
+
+
+```python copy
+xls = transform.reannotate_positions(xls, fasta="../../data/_fasta/Cas9_plus10.fasta")
+```
+<Callout emoji="✓">
+```
+    Annotating crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████| 265/265 [00:00<00:00, 88332.72it/s]
+```
+</Callout>
+
+We can then re-annotate the corresponding protein accessions and protein crosslink positions using the function `transform.reannotate_positions()` and passing the crosslinks as the first argument and the fasta file as the second argument or via the `fasta` parameter. You can read more about the `reannotate_position()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.reannotate_positions).
+
+
+```python copy
+print(type(xls), type(xls[0]), xls[0]["data_type"])
+```
+<Callout emoji="✓">
+```
+    <class 'list'> <class 'dict'> crosslink
+```
+</Callout>
+
+Since we passed a list of crosslinks to `reannotate_positions()` the function also returned a list of crosslinks (with re-annotated protein accessions and crosslink positions) back!
+
+
+```python copy
+proteins = transform.filter_protein_distribution(xls)
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'K1C15_SHEEP', 'AMYS_HUMAN', 'SRPP_HEVBR', 'CAH1_HUMAN', 'CTRB_BOVIN', 'OVAL_CHICK', 'RETBP_HUMAN'])
+```
+</Callout>
+
+
+If we now look at our proteins, we see that our `sp` contaminant group has been replaced with the correct corresponding proteins instead.
+
+*****
+
+## [Re-]Annotating a `parser_result`
+
+We can also \[re-\]annotate a complete `parser_result` which will \[re-\]annotate all its crosslink-spectrum-matches and crosslinks (if they exist).
+
+
+```python copy
+parser_result = transform.targets_only(parser_result)
+```
+
+> [!IMPORTANT]
+>
+> **Before we can \[re-\]annotate we have to filter for target matches, because we cannot annotate decoy matches! Search engines generate decoys differently and therefore it is often impossible to map decoy peptides back to their proteins based on their sequence!**
+
+
+```python copy
+parser_result = transform.reannotate_positions(
+    parser_result, fasta="../../data/_fasta/Cas9_plus10.fasta"
+)
+```
+<Callout emoji="✓">
+```
+    Annotation crosslink-spectrum-matches...: 100%|█████████████████████████████████████████████████████████████████| 786/786 [00:00<00:00, 62842.60it/s]
+    Annotating crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████| 265/265 [00:00<00:00, 88339.74it/s]
+```
+</Callout>
+
+We can then re-annotate the corresponding protein accessions and protein crosslink positions using the function `transform.reannotate_positions()` and passing the `parser_result` as the first argument and the fasta file as the second argument or via the `fasta` parameter. You can read more about the `reannotate_position()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.reannotate_positions).
+
+
+```python copy
+print(type(parser_result), parser_result["data_type"])
+```
+<Callout emoji="✓">
+```
+    <class 'dict'> parser_result
+```
+</Callout>
+
+Since we passed a `parser_result` to `reannotate_positions()` the function also returned a `parser_result` (with CSMs and crosslinks with re-annotated protein accessions and crosslink positions) back!
+
+
+```python copy
+proteins = transform.filter_protein_distribution(
+    parser_result["crosslink-spectrum-matches"]
+)
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'K1C15_SHEEP', 'AMYS_HUMAN', 'SRPP_HEVBR', 'CAH1_HUMAN', 'CTRB_BOVIN', 'OVAL_CHICK', 'RETBP_HUMAN'])
+```
+</Callout>
+
+
+
+```python copy
+proteins = transform.filter_protein_distribution(parser_result["crosslinks"])
+proteins.keys()
+```
+<Callout emoji="✓">
+```
+    dict_keys(['Cas9', 'K1C15_SHEEP', 'AMYS_HUMAN', 'SRPP_HEVBR', 'CAH1_HUMAN', 'CTRB_BOVIN', 'OVAL_CHICK', 'RETBP_HUMAN'])
+```
+</Callout>
+
+
+Again, if we now look at our proteins in our CSMs and crosslinks, we see that our `sp` contaminant group has been replaced with the correct corresponding proteins instead.
+
+*****
+
+## Annotation of Completely Missing Protein Accessions and Positions
+
+
+```python copy
+from pyXLMS import data
+
+xls = [data.create_crosslink_min("ADANLDK", 7, "GNTDRHSIK", 9)]
+xls = transform.reannotate_positions(xls, "../../data/_fasta/Cas9_plus10.fasta")
+```
+<Callout emoji="✓">
+```
+    Annotating crosslinks...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<?, ?it/s]
+```
+</Callout>
+
+Of course we can also annotate CSMs and crosslinks from scratch - even if they have no other associated information other then the alpha and beta peptide sequences. Here we create a minimal Cas9-Cas9 crosslink with peptides `"ADANLDK"` and `"GNTDRHSIK"` which we annotate using our `"../../data/_fasta/Cas9_plus10.fasta"` fasta file.
+
+
+```python copy
+print("Alpha:", xls[0]["alpha_proteins"], xls[0]["alpha_proteins_crosslink_positions"])
+print("Beta:", xls[0]["beta_proteins"], xls[0]["beta_proteins_crosslink_positions"])
+```
+<Callout emoji="✓">
+```
+    Alpha: ['Cas9'] [1293]
+    Beta: ['Cas9'] [48]
+```
+</Callout>
+
+The annotation via `reannotate_position()` correctly matched the peptides back to the sequence of Cas9 (which was in our fasta file).
+
+*****
+
+## Advanced Usage
+
+In case you have fasta files with special headers, that are not in UniProtKB standard format, you'll need to adopt the annotation function as shown in the following.
+
+
+```python copy
+with open("../../data/_fasta/Cas9_crapome.fasta", "r", encoding="utf-8") as f:
+    lines = f.readlines()
+    titles = [line for line in lines if line.startswith(">")]
+    print("".join(titles[:5]))
+```
+<Callout emoji="✓">
+```
+    >Cas9
+    >spALBU_BOVIN|
+    >spAMYS_HUMAN|
+    >spCAS1_BOVIN|
+    >spCAS2_BOVIN|
+```
+</Callout>
+
+Consider the above fasta file, the titles/headers do not match standard UniProtKB formatting.
+
+
+```python copy
+xls = [data.create_crosslink_min("DSPDLPKLKP", 7, "GNTDRHSIK", 9)]
+```
+
+As an example we create a minimal ALBU_BOVIN-Cas9 crosslink with peptides `"DSPDLPKLKP"` and `"GNTDRHSIK"` which we will annotate using the above fasta file.
+
+
+```python copy
+xls = transform.reannotate_positions(xls, "../../data/_fasta/Cas9_crapome.fasta")
+```
+<Callout type="error">
+```
+    C:\Users\Micha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\transform\reannotate_positions.py:177: RuntimeWarning: Possible duplicates found in fasta file! Read 117 sequences but only stored 3.
+      warnings.warn(
+    Annotating crosslinks...:   0%|                                                                                                | 0/1 [00:00<?, ?it/s]
+    
+
+
+    ---------------------------------------------------------------------------
+
+    RuntimeError                              Traceback (most recent call last)
+
+    Cell In[24], line 1
+    ----> 1 xls = transform.reannotate_positions(xls, "../../data/_fasta/Cas9_crapome.fasta")
+    
+
+    File ~\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\transform\reannotate_positions.py:194, in reannotate_positions(data, fasta, title_to_accession)
+        192 if data[0]["data_type"] == "crosslink":
+        193     for xl in tqdm(data, total=len(data), desc="Annotating crosslinks..."):
+    --> 194         proteins_a, pep_position0_proteins_a = __get_proteins_and_positions(
+        195             xl["alpha_peptide"], protein_db
+        196         )
+        197         proteins_b, pep_position0_proteins_b = __get_proteins_and_positions(
+        198             xl["beta_peptide"], protein_db
+        199         )
+        200         reannoted.append(
+        201             create_crosslink(
+        202                 peptide_a=xl["alpha_peptide"],
+       (...)    220             )
+        221         )
+    
+
+    File ~\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\transform\reannotate_positions.py:71, in __get_proteins_and_positions(peptide, protein_db)
+         69             positions.append(match.start())
+         70 if len(proteins) == 0:
+    ---> 71     raise RuntimeError(f"No match found for peptide {peptide}!")
+         72 return (proteins, positions)
+    
+
+    RuntimeError: No match found for peptide DSPDLPKLKP!
+```
+</Callout>
+
+Trying to annotate our crosslink with the default `reannotate_positions()` will raise a `RuntimeError` because the fasta titles could not be correctly parsed and therefore the peptide could not be matched.
+
+
+```python copy
+def my_fasta_title_parser(title: str) -> str:
+    return title[2:].strip("|") if title.startswith("sp") else title.strip("|")
+```
+
+To resolve this problem we need to implement a function that parses the correct protein accession (or unique identifier) from the fasta header/title, such as the above `my_fasta_title_parser()`. By default the `reannotate_positions()` function uses the `transform.fasta_title_to_accession()` function for that purpose which expects fasta headers/titles to be in [standard UniProtKB format](https://www.uniprot.org/help/fasta-headers). You can read more about the `fasta_title_to_accession()` function and its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.reannotate_positions.fasta_title_to_accession).
+
+
+```python copy
+xls = transform.reannotate_positions(
+    xls,
+    "../../data/_fasta/Cas9_crapome.fasta",
+    title_to_accession=my_fasta_title_parser,
+)
+```
+<Callout emoji="✓">
+```
+    Annotating crosslinks...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<?, ?it/s]
+```
+</Callout>
+
+If we now pass our custom parser function to `reannotate_positions()` via `title_to_accession=my_fasta_title_parser` we correctly get our results.
+
+> [!IMPORTANT]
+>
+> **The `title_to_accession` parameter expects a function that takes a string as input and returns a string. The passed function receives the fasta header/title for each sequence as input and should return a unique identifier for that sequence!**
+
+
+```python copy
+print("Alpha:", xls[0]["alpha_proteins"], xls[0]["alpha_proteins_crosslink_positions"])
+print("Beta:", xls[0]["beta_proteins"], xls[0]["beta_proteins_crosslink_positions"])
+```
+<Callout emoji="✓">
+```
+    Alpha: ['ALBU_BOVIN'] [138]
+    Beta: ['Cas9'] [48]
+```
+</Callout>
+
+With our adapted `reannotate_positions()` function we correctly recover our ALBU_BOVIN-Cas9 crosslink and annotate the protein identifiers and crosslink positions correctly.
