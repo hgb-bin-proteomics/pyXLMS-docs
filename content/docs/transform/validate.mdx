@@ -1,0 +1,313 @@
+import { Callout } from 'nextra/components'
+
+# **False-Discovery-Rate Estimation and Validation**
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.2
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All data transformation functionality - including `validate()` - is available via the `transform` submodule. We also import the `parser` submodule here for reading result files.
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 20372.43it/s]
+    Reading MS Annika crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████| 300/300 [00:00<00:00, 36172.35it/s]
+```
+</Callout>
+
+We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
+
+
+```python copy
+csms = parser_result["crosslink-spectrum-matches"]
+xls = parser_result["crosslinks"]
+```
+
+For easier access we assign our crosslink-spectrum-matches to the variable `csms` and our crosslinks to the variable `xls`.
+
+## Introduction
+
+pyXLMS offers false-discovery-rate (FDR) estimation and validation of crosslink-spectrum-matches and crosslinks via the `transform.validate()` function. Before we run any kind of examples, let's have a look at the function and its parameters:
+
+```python filename="src/pyXLMS/transform/validate.py"
+def validate(
+    data: List[Dict[str, Any]] | Dict[str, Any],
+    fdr: float = 0.01,
+    formula: Literal["D/T", "(TD+DD)/TT", "(TD-DD)/TT"] = "D/T",
+    score: Literal["higher_better", "lower_better"] = "higher_better",
+    separate_intra_inter: bool = False,
+    ignore_missing_labels: bool = False,
+) -> List[Dict[str, Any]] | Dict[str, Any]
+```
+
+The function has 6 possible parameters:
+- **data**: A list of crosslink-spectrum-matches or crosslinks to validate, or a `parser_result`.
+- **fdr**: The target FDR, must be given as a real number between `0` and `1`. The default of `0.01` corresponds to 1% FDR.
+- **formula**: One of `"D/T"`, `"(TD+DD)/TT"`, and `"(TD-DD)/TT"` denoting which formula to use to estimate FDR. `D` and `DD` denote decoy matches, `T` and `TT` denote target matches, and `TD` denotes target-decoy and decoy-target matches.
+  - Options `"D/T"` and `"(TD+DD)/TT"` are the same and the standard way how MS Annika calculates FDR.
+    - See references \[[1](https://doi.org/10.1021/acs.jproteome.0c01000), [2](https://doi.org/10.1038/s42004-024-01386-x)\].
+  - Option `"(TD-DD)/TT"` is the formula suggested by xiFDR for directional crosslinks.
+    - See references \[[3](https://doi.org/10.1021/acs.analchem.6b03745)\].
+- **score**: One of `"higher_better"`, or `"lower_better"` denoting if a higher score is considered better, or a lower score is considered better.
+- **separate_intra_inter**: If FDR should be estimated separately for intra and inter matches.
+- **ignore_missing_labels**: If crosslinks and crosslink-spectrum-matches should be ignored if they don't have target and decoy labels. By default and error is thrown if any unlabelled data is encountered.
+
+Except for `data` all other parameters are optional with sensible defaults in place to stricly validate results. The `data` parameter supports lists of crosslink-spectrum-matches or crosslinks as input, or a complete `parser_result`. If a list of crosslink-spectrum-matches was provided, `validate()` will return a list of validated crosslink-spectrum-matches. If a list of crosslinks was provided, `validate()` will return a list of validated crosslinks. If a `parser_result` was provided, `validate()` will return a `parser_result` where all elements are validated.
+
+## Validating Crosslink-Spectrum-Matches
+
+
+```python copy
+_ = transform.summary(csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+Before validation, let's have a look at our non-validated crosslink-spectrum-matches using the `transform.summary()` function which you can read more about here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+validated_csms = transform.validate(csms)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:  15%|████████▉                                                    | 121/826 [00:00<00:00, 40192.51it/s]
+```
+</Callout>
+
+We can validate our CSMs using the `transform.validate()` function. For strict validation that targets a 1% false-discovery-rate we can leave all optional parameters at their default values. You can read more about the `validate()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate).
+
+> [!IMPORTANT]
+>
+> **Please note that progress bars will usually not complete when running this function. This is by design as it is not necessary to iterate over all scores to estimate FDR!**
+
+
+```python copy
+_ = transform.summary(validated_csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 705.0
+    Number of unique CSMs: 705.0
+    Number of intra CSMs: 701.0
+    Number of inter CSMs: 4.0
+    Number of target-target CSMs: 699.0
+    Number of target-decoy CSMs: 6.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 34.188549584398956
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+As a result we get a list of crosslink-spectrum-matches `validated_csms` that is validated for 1% estimated FDR which now contains 705 CSMs (in comparison to 826 unvalidated CSMs previously).
+
+
+```python copy
+validated_csms = transform.validate(
+    csms, fdr=0.05, formula="(TD-DD)/TT", separate_intra_inter=True
+)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:   0%|                                                                          | 0/803 [00:00<?, ?it/s]
+    Iterating over scores for FDR calculation...:  96%|██████████████████████████████████████████████████████████████████████▊   | 22/23 [00:00<?, ?it/s]
+```
+</Callout>
+
+Of course we can also do more relaxed FDR estimation and validation, here we validate using a 5% FDR threshold `fdr=0.05` and using a different formula `formula="(TD-DD)/TT"`. We also separate FDR validation by intra and inter matches `separate_intra_inter=True`.
+
+
+```python copy
+_ = transform.summary(validated_csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 804.0
+    Number of unique CSMs: 804.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 1.0
+    Number of target-target CSMs: 775.0
+    Number of target-decoy CSMs: 28.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+As a result we now get 804 validated crosslink-spectrum-matches instead.
+
+*****
+
+## Validating Crosslinks
+
+
+```python copy
+_ = transform.summary(xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+Before validation, let's have a look at our non-validated crosslinks using the `transform.summary()` function which you can read more about here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+validated_xls = transform.validate(xls)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:  25%|██████████████████                                                       | 74/300 [00:00<?, ?it/s]
+```
+</Callout>
+
+Similarly to validating CSMs, we can validate our crosslinks using the `transform.validate()` function. For strict validation that targets a 1% false-discovery-rate we can leave all optional parameters at their default values. You can read more about the `validate()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate).
+
+> [!IMPORTANT]
+>
+> **Please note that progress bars will usually not complete when running this function. This is by design as it is not necessary to iterate over all scores to estimate FDR!**
+
+
+```python copy
+_ = transform.summary(validated_xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 226.0
+    Number of unique crosslinks by peptide: 226.0
+    Number of unique crosslinks by protein: 226.0
+    Number of intra crosslinks: 225.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 224.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 2.0
+    Minimum crosslink score: 52.92422323424151
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+As a result we get a list of crosslinks `validated_xls` that is validated for 1% estimated FDR which now contains 226 crosslinks (in comparison to 300 unvalidated crosslinks previously).
+
+
+```python copy
+validated_xls = transform.validate(xls, fdr=0.05, separate_intra_inter=True)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:   8%|██████                                                                   | 23/279 [00:00<?, ?it/s]
+    Iterating over scores for FDR calculation...:  95%|██████████████████████████████████████████████████████████████████████▍   | 20/21 [00:00<?, ?it/s]
+```
+</Callout>
+
+Of course we can also do more relaxed FDR estimation and validation, here we validate using a 5% FDR threshold `fdr=0.05` and also separate FDR validation by intra and inter matches `separate_intra_inter=True`.
+
+
+```python copy
+_ = transform.summary(validated_xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 257.0
+    Number of unique crosslinks by peptide: 257.0
+    Number of unique crosslinks by protein: 256.0
+    Number of intra crosslinks: 256.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 245.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 12.0
+    Minimum crosslink score: 22.938812980521753
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+As a result we now get 257 validated crosslinks instead.
+
+*****
+
+## Validating a `parser_result`
+
+
+```python copy
+parser_result = transform.validate(parser_result)
+```
+<Callout emoji="✓">
+```
+    Iterating over scores for FDR calculation...:  15%|██████████▌                                                             | 121/826 [00:00<?, ?it/s]
+    Iterating over scores for FDR calculation...:  25%|██████████████████                                                       | 74/300 [00:00<?, ?it/s]
+```
+</Callout>
+
+We can validate our complete `parser_result` using the `transform.validate()` function as well. For strict validation that targets a 1% false-discovery-rate we can leave all optional parameters at their default values. You can read more about the `validate()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 705.0
+    Number of unique CSMs: 705.0
+    Number of intra CSMs: 701.0
+    Number of inter CSMs: 4.0
+    Number of target-target CSMs: 699.0
+    Number of target-decoy CSMs: 6.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 34.188549584398956
+    Maximum CSM score: 452.9861536355926
+    Number of crosslinks: 226.0
+    Number of unique crosslinks by peptide: 226.0
+    Number of unique crosslinks by protein: 226.0
+    Number of intra crosslinks: 225.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 224.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 2.0
+    Minimum crosslink score: 52.92422323424151
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+In this case the `validate()` function returns a `parser_result` again, but all the elements are now validated. Therefore, all crosslink-spectrum-matches and crosslinks in the `parser_result` are now validated for 1% estimated FDR in our example.
