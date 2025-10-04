@@ -1,0 +1,343 @@
+import { Callout } from 'nextra/components'
+
+# Reading MeroX Result Files
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.1
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All functionality to parse crosslink-spectrum-matches (CSMs) and crosslinks (XLs) from MeroX result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
+
+## Reading MeroX Result Files via `parser.read()`
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/merox/XLpeplib_Beveridge_QEx-HFX_DSS_R1.zhrm",
+    engine="MeroX",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MeroX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 93/93 [00:00<00:00, 9301.34it/s]
+```
+</Callout>
+
+We can read any MeroX result file using the `parser.read()` method and setting `engine="MeroX"`. pyXLMS supports both reading of `.csv` and the MeroX specific `.zhrm` files. The method also requires us to specify the used crosslinker, in this case DSS was used (`crosslinker="DSS"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
+
+
+```python copy
+for k, v in parser_result.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: MeroX
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+As you can see from the `parser_result` the MeroX result file contained CSMs. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 93.0
+    Number of unique CSMs: 93.0
+    Number of intra CSMs: 93.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 93.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 59.0
+    Maximum CSM score: 178.0
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about our read CSMs. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: GKSDNVPSEEVVK
+    alpha_modifications: {2: ('DSS', 138.06808)}
+    alpha_peptide_crosslink_position: 2
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [870]
+    alpha_proteins_peptide_positions: [869]
+    alpha_score: 13.14747045541646
+    alpha_decoy: False
+    beta_peptide: VKYVTEGMR
+    beta_modifications: {2: ('DSS', 138.06808), 8: ('Oxidation', 15.994915)}
+    beta_peptide_crosslink_position: 2
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [532]
+    beta_proteins_peptide_positions: [531]
+    beta_score: 12.143335648371812
+    beta_decoy: False
+    crosslink_type: intra
+    score: 97.0
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1
+    scan_nr: 10061
+    charge: 4
+    retention_time: 3099.0
+    ion_mobility: None
+    additional_information: {'xLinkScore': 112.68082897048632, 'Protein 1': '>Cas9', 'Protein 2': '>Cas9', 'MS1intensity': 0.0}
+```
+</Callout>
+
+Using `parser_result["crosslink-spectrum-matches"][0]` we can get the first CSM of the file and take a closer look at that.
+
+Here is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+type(parser_result["crosslinks"])
+```
+<Callout emoji="✓">
+```
+    NoneType
+```
+</Callout>
+
+
+In this example `parser_result["crosslinks"]` is `None`  because MeroX does not report any crosslinks. Therefore, no crosslinks can be displayed here.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/merox/XLpeplib_Beveridge_QEx-HFX_DSS_R1.csv",
+    engine="MeroX",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MeroX CSMs...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████| 93/93 [00:00<00:00, 10334.36it/s]
+```
+</Callout>
+
+We can also as easily read a `.csv` file instead of a `.zhrm` file and don't even have to change anything. This is because when a filename is given, the parser will automatically detect the corresponding extension and use the correct sub-method.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 93.0
+    Number of unique CSMs: 93.0
+    Number of intra CSMs: 93.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 93.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 59.0
+    Maximum CSM score: 178.0
+```
+</Callout>
+
+Again, with the `transform.summary()` method we can also print out some summary statistics about our read CSMs.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/merox/XLpeplib_Beveridge_QEx-HFX_DSS_R1.zhrm",
+    engine="MeroX",
+    crosslinker="DSS",
+    parse_modifications=False,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MeroX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 93/93 [00:00<00:00, 4766.78it/s]
+```
+</Callout>
+
+We can also tell the parser to not parse modifications via `parse_modifications=False`, this might be useful if you don't care about post-translational-modifications, or if you have unknown modifications in your results that you would have to manually specify - _and you don't want to do that_.
+
+In case you want to parse modifications but have unknown modifications in your results, you have to set them via the `modifications` parameter that can be passed via `**kwargs` to `parser.read_merox()`. More about that later...
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: GKSDNVPSEEVVK
+    alpha_modifications: None
+    alpha_peptide_crosslink_position: 2
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [870]
+    alpha_proteins_peptide_positions: [869]
+    alpha_score: 13.14747045541646
+    alpha_decoy: False
+    beta_peptide: VKYVTEGMR
+    beta_modifications: None
+    beta_peptide_crosslink_position: 2
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [532]
+    beta_proteins_peptide_positions: [531]
+    beta_score: 12.143335648371812
+    beta_decoy: False
+    crosslink_type: intra
+    score: 97.0
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1
+    scan_nr: 10061
+    charge: 4
+    retention_time: 3099.0
+    ion_mobility: None
+    additional_information: {'xLinkScore': 112.68082897048632, 'Protein 1': '>Cas9', 'Protein 2': '>Cas9', 'MS1intensity': 0.0}
+```
+</Callout>
+
+Notice that this time the fields `alpha_modifications` and `beta_modifications` are empty (`None`) for our sample CSM in contrast to when we looked at it further up.
+
+*****
+
+## Reading MeroX Result Files via `parser.read_merox()`
+
+
+```python copy
+parser_result = parser.read_merox(
+    "../../data/merox/XLpeplib_Beveridge_QEx-HFX_DSS_R1.zhrm", crosslinker="DSS"
+)
+```
+<Callout emoji="✓">
+```
+    Reading MeroX CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| 93/93 [00:00<00:00, 500.27it/s]
+```
+</Callout>
+
+We can also read any MeroX result file using the `parser.read_merox()` method which allows a more nuanced control over reading MeroX result files - even though theoretically everything can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_merox()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_merox.read_merox).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 93.0
+    Number of unique CSMs: 93.0
+    Number of intra CSMs: 93.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 93.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 59.0
+    Maximum CSM score: 178.0
+```
+</Callout>
+
+*****
+
+
+```python copy
+from pyXLMS.constants import MEROX_MODIFICATION_MAPPING
+
+MEROX_MODIFICATION_MAPPING
+```
+<Callout emoji="✓">
+```
+    {'B': {'Amino Acid': 'C', 'Modification': ('Carbamidomethyl', 57.021464)},
+     'm': {'Amino Acid': 'M', 'Modification': ('Oxidation', 15.994915)}}
+```
+</Callout>
+
+
+By default the MeroX parser considers all modifications that are in `constants.MEROX_MODIFICATION_MAPPING` as shown above for **pyXLMS version 1.5.1** - a full list of default MeroX modifications is given here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.constants.MEROX_MODIFICATION_MAPPING).
+
+
+```python copy
+my_mods = dict(MEROX_MODIFICATION_MAPPING)
+my_mods["k"] = {"Amino Acid": "K", "Modification": ("Methylation", 14.01565)}
+my_mods
+```
+<Callout emoji="✓">
+```
+    {'B': {'Amino Acid': 'C', 'Modification': ('Carbamidomethyl', 57.021464)},
+     'm': {'Amino Acid': 'M', 'Modification': ('Oxidation', 15.994915)},
+     'k': {'Amino Acid': 'K', 'Modification': ('Methylation', 14.01565)}}
+```
+</Callout>
+
+
+If you have any additional modifications in your result file(s) the parser needs to know about them, which is done via the `modifications` parameter that allows for passing a custom dictionary of modifications. It is usually a good idea to base this custom dictionary on `constants.MEROX_MODIFICATION_MAPPING` and add your modifications after, as shown above for methylation of lysine.
+
+
+```python copy
+parser_result = parser.read_merox(
+    "../../data/merox/XLpeplib_Beveridge_QEx-HFX_DSS_R1.zhrm",
+    crosslinker="DSS",
+    modifications=my_mods,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MeroX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 93/93 [00:00<00:00, 8453.69it/s]
+```
+</Callout>
+
+You can then pass the full list of expected modifications `my_mods` via the `modifications` parameter.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 93.0
+    Number of unique CSMs: 93.0
+    Number of intra CSMs: 93.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 93.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 59.0
+    Maximum CSM score: 178.0
+```
+</Callout>
+
+*****
+
+There are several other parameters that can be set, you can read more about them here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_merox.read_merox).
