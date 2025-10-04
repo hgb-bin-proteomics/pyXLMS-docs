@@ -1,5 +1,5 @@
 export default {
-  'index': 'Available Data Transformations',
+  'index': 'Introduction',
   'summary_and_util': 'Result Summary and Utility Functions',
   'aggregate': 'Uniqueness and Aggregation',
   'validate': 'False-Discovery-Rate Estimation and Validation',

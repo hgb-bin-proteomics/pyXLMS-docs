@@ -1,5 +1,5 @@
 export default {
-  'index': 'Available Figures and Plot Types',
+  'index': 'Introduction',
   'plot_crosslink_type_distribution': 'Plotting Crosslink Type Distribution',
   'plot_peptide_pair_distribution': 'Plotting Peptide Pair Distribution',
   'plot_protein_distribution': 'Plotting Protein Distribution',

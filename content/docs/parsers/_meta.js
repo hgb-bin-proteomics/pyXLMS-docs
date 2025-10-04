@@ -1,4 +1,4 @@
 export default {
-  'index': 'Reading Result Files',
+  'index': 'Introduction',
   'msannika': 'Reading MS Annika Result Files'
 }
