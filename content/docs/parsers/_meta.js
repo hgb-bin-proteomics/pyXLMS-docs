@@ -5,5 +5,6 @@ export default {
   'merox': 'Reading MeroX Result Files',
   'msannika': 'Reading MS Annika Result Files',
   'mzid': 'Reading mzIdentML Result Files',
-  'plink': 'Reading pLink Result Files'
+  'plink': 'Reading pLink Result Files',
+  'scout': 'Reading Scout Result Files'
 }
