@@ -6,5 +6,6 @@ export default {
   'msannika': 'Reading MS Annika Result Files',
   'mzid': 'Reading mzIdentML Result Files',
   'plink': 'Reading pLink Result Files',
-  'scout': 'Reading Scout Result Files'
+  'scout': 'Reading Scout Result Files',
+  'xi': 'Reading xiSearch/xiFDR Result Files'
 }
