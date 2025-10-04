@@ -1,0 +1,327 @@
+import { Callout } from 'nextra/components'
+
+# Reading MaxLynx/MaxQuant Result Files
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.1
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All functionality to parse crosslink-spectrum-matches (CSMs) from MaxLynx/MaxQuant result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
+
+_PS: The terms MaxLynx and MaxQuant will be used interchangeably in this notebook._
+
+## Reading MaxLynx Result Files via `parser.read()`
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/maxquant/run1/crosslinkMsms.txt",
+    engine="MaxLynx",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MaxQuant CSMs...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████| 730/730 [00:00<00:00, 3337.91it/s]
+```
+</Callout>
+
+We can read any `crosslinkMsms.txt` MaxLynx result file using the `parser.read()` method and setting `engine="MaxLynx"`. The method also requires us to specify the used crosslinker, in this case DSS was used (`crosslinker="DSS"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
+
+
+```python copy
+for k, v in parser_result.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: MaxQuant
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+As you can see from the `parser_result` the MaxLynx result file contained CSMs. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`. We will do this a bit further down.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 730.0
+    Number of unique CSMs: 730.0
+    Number of intra CSMs: 728.0
+    Number of inter CSMs: 2.0
+    Number of target-target CSMs: 723.0
+    Number of target-decoy CSMs: 6.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 13.746
+    Maximum CSM score: 375.86
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about our read CSMs. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: GQKNSR
+    alpha_modifications: {3: ('DSS', 138.06808)}
+    alpha_peptide_crosslink_position: 3
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [779]
+    alpha_proteins_peptide_positions: [777]
+    alpha_score: 46.6176724042364
+    alpha_decoy: False
+    beta_peptide: GQKNSR
+    beta_modifications: {3: ('DSS', 138.06808)}
+    beta_peptide_crosslink_position: 3
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [779]
+    beta_proteins_peptide_positions: [777]
+    beta_score: 46.6176724042364
+    beta_decoy: False
+    crosslink_type: intra
+    score: 46.618
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1
+    scan_nr: 2257
+    charge: 3
+    retention_time: None
+    ion_mobility: None
+    additional_information: {'Proteins1': 'Cas9', 'Proteins2': 'Cas9', 'Delta score': 42.731}
+```
+</Callout>
+
+Using `parser_result["crosslink-spectrum-matches"][0]` we can get the first CSM of the file and take a closer look at that.
+
+Here is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+type(parser_result["crosslinks"])
+```
+<Callout emoji="✓">
+```
+    NoneType
+```
+</Callout>
+
+
+In this example `parser_result["crosslinks"]` is `None`  because MaxLynx does not report any crosslinks. Therefore, no crosslinks can be displayed here.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/maxquant/run2/crosslinkMsms.txt",
+    engine="MaxLynx",
+    crosslinker="DSS",
+    parse_modifications=False,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MaxQuant CSMs...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████| 730/730 [00:00<00:00, 9603.73it/s]
+```
+</Callout>
+
+We can also tell the parser to not parse modifications via `parse_modifications=False`, this might be useful if you don't care about post-translational-modifications, or if you have unknown modifications in your results that you would have to manually specify - _and you don't want to do that_.
+
+In case you want to parse modifications but have unknown modifications in your results, you have to set them via the `modifications` parameter that can be passed via `**kwargs` to `parser.read_maxlynx()`. More about that later...
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: GQKNSR
+    alpha_modifications: None
+    alpha_peptide_crosslink_position: 3
+    alpha_proteins: ['Cas10']
+    alpha_proteins_crosslink_positions: [790]
+    alpha_proteins_peptide_positions: [788]
+    alpha_score: 46.6176724042364
+    alpha_decoy: False
+    beta_peptide: GQKNSR
+    beta_modifications: None
+    beta_peptide_crosslink_position: 3
+    beta_proteins: ['Cas10']
+    beta_proteins_crosslink_positions: [790]
+    beta_proteins_peptide_positions: [788]
+    beta_score: 46.6176724042364
+    beta_decoy: False
+    crosslink_type: intra
+    score: 46.618
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1
+    scan_nr: 2257
+    charge: 3
+    retention_time: None
+    ion_mobility: None
+    additional_information: {'Proteins1': 'Cas10(Cas10;Cas9)', 'Proteins2': 'Cas10(Cas10;Cas9)', 'Delta score': 42.731}
+```
+</Callout>
+
+Notice that this time the fields `alpha_modifications` and `beta_modifications` are empty (`None`) for our sample CSM in contrast to when we looked at it further up.
+
+*****
+
+## Reading MaxLynx Result Files via `parser.read_maxlynx()`
+
+
+```python copy
+parser_result = parser.read_maxlynx(
+    "../../data/maxquant/run1/crosslinkMsms.txt", crosslinker="DSS"
+)
+```
+<Callout emoji="✓">
+```
+    Reading MaxQuant CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 730/730 [00:00<00:00, 11311.62it/s]
+```
+</Callout>
+
+We can also read any MaxLynx result file using the `parser.read_maxlynx()` method which allows a more nuanced control over reading MaxLynx result files - even though theoretically everything can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_maxlynx()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_maxquant.read_maxlynx).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 730.0
+    Number of unique CSMs: 730.0
+    Number of intra CSMs: 728.0
+    Number of inter CSMs: 2.0
+    Number of target-target CSMs: 723.0
+    Number of target-decoy CSMs: 6.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 13.746
+    Maximum CSM score: 375.86
+```
+</Callout>
+
+*****
+
+
+```python copy
+from pyXLMS.constants import MODIFICATIONS
+
+MODIFICATIONS
+```
+<Callout emoji="✓">
+```
+    {'Carbamidomethyl': 57.021464,
+     'Oxidation': 15.994915,
+     'Phospho': 79.966331,
+     'Acetyl': 42.010565,
+     'BS3': 138.06808,
+     'DSS': 138.06808,
+     'DSSO': 158.00376,
+     'DSBU': 196.08479231,
+     'ADH': 138.09054635,
+     'DSBSO': 308.03883,
+     'PhoX': 209.97181,
+     'DSG': 96.0211293726}
+```
+</Callout>
+
+
+By default the MaxLynx parser considers all modifications that are in `constants.MODIFICATIONS` as shown above for **pyXLMS version 1.5.1** - a full list of default modifications is given here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.constants.MODIFICATIONS).
+
+
+```python copy
+my_mods = dict(MODIFICATIONS)
+my_mods["Methyl"] = 14.01565
+my_mods
+```
+<Callout emoji="✓">
+```
+    {'Carbamidomethyl': 57.021464,
+     'Oxidation': 15.994915,
+     'Phospho': 79.966331,
+     'Acetyl': 42.010565,
+     'BS3': 138.06808,
+     'DSS': 138.06808,
+     'DSSO': 158.00376,
+     'DSBU': 196.08479231,
+     'ADH': 138.09054635,
+     'DSBSO': 308.03883,
+     'PhoX': 209.97181,
+     'DSG': 96.0211293726,
+     'Methyl': 14.01565}
+```
+</Callout>
+
+
+If you have any additional modifications in your result file(s) the parser needs to know about them, which is done via the `modifications` parameter that allows for passing a custom dictionary of modifications. It is usually a good idea to base this custom dictionary on `constants.MODIFICATIONS` and add your modifications after, as shown above for methylation.
+
+
+```python copy
+parser_result = parser.read_maxlynx(
+    "../../data/maxquant/run1/crosslinkMsms.txt",
+    crosslinker="DSS",
+    modifications=my_mods,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MaxQuant CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 730/730 [00:00<00:00, 10500.97it/s]
+```
+</Callout>
+
+You can then pass the full list of expected modifications `my_mods` via the `modifications` parameter.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 730.0
+    Number of unique CSMs: 730.0
+    Number of intra CSMs: 728.0
+    Number of inter CSMs: 2.0
+    Number of target-target CSMs: 723.0
+    Number of target-decoy CSMs: 6.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 13.746
+    Maximum CSM score: 375.86
+```
+</Callout>
+
+*****
+
+There are several other parameters that can be set, you can read more about them here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_maxquant.read_maxlynx).
