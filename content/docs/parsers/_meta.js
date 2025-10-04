@@ -7,5 +7,6 @@ export default {
   'mzid': 'Reading mzIdentML Result Files',
   'plink': 'Reading pLink Result Files',
   'scout': 'Reading Scout Result Files',
-  'xi': 'Reading xiSearch/xiFDR Result Files'
+  'xi': 'Reading xiSearch/xiFDR Result Files',
+  'xlinkx': 'Reading XlinkX Result Files'
 }
