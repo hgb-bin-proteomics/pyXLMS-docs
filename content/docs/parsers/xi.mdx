@@ -1,0 +1,460 @@
+import { Callout } from 'nextra/components'
+
+# Reading xiSearch/xiFDR Result Files
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.2
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All functionality to parse crosslink-spectrum-matches (CSMs) and crosslinks (XLs) from xiSearch and xiFDR result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
+
+## Reading xiSearch/xiFDR Result Files via `parser.read()`
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xi/1perc_xl_boost_CSM_xiFDR2.2.1.csv",
+    engine="xiSearch/xiFDR",
+    crosslinker="BS3",
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR CSMs...: 100%|█████████████████████████████████████████████████████████████████████████████████████| 413/413 [00:00<00:00, 6203.70it/s]
+```
+</Callout>
+
+We can read xiSearch and xiFDR result files by using the `parser.read()` method and setting `engine="xiSearch/xiFDR"`, in this example using a CSMs result file from xiFDR. The method also requires us to specify the crosslinker that was used for the experiment, which in this case is BS3 (`crosslinker="BS3"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
+
+
+```python copy
+for k, v in parser_result.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: xiSearch/xiFDR
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+As you can see from the `parser_result` the xiFDR result file contains CSMs. See `crosslink-spectrum-matches: <class 'list'>` in the print out. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`. We will do this a bit further down.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 413.0
+    Number of unique CSMs: 413.0
+    Number of intra CSMs: 413.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 411.0
+    Number of target-decoy CSMs: 2.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 6.808
+    Maximum CSM score: 27.268
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about the CSMs in the file. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: KIECFDSVEISGVEDR
+    alpha_modifications: {1: ('BS3', 138.068), 4: ('Carbamidomethyl', 57.021464)}
+    alpha_peptide_crosslink_position: 1
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [575]
+    alpha_proteins_peptide_positions: [575]
+    alpha_score: None
+    alpha_decoy: False
+    beta_peptide: KIECFDSVEISGVEDR
+    beta_modifications: {1: ('BS3', 138.068), 4: ('Carbamidomethyl', 57.021464)}
+    beta_peptide_crosslink_position: 1
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [575]
+    beta_proteins_peptide_positions: [575]
+    beta_score: None
+    beta_decoy: False
+    crosslink_type: intra
+    score: 27.268
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1.mgf
+    scan_nr: 19140
+    charge: 4
+    retention_time: None
+    ion_mobility: None
+    additional_information: None
+```
+</Callout>
+
+Using `parser_result["crosslink-spectrum-matches"][0]` we can get the first CSM of the file and take a closer look at that.  
+
+This is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xi/1perc_xl_boost_Links_xiFDR2.2.1.csv",
+    engine="xiSearch/xiFDR",
+    crosslinker="BS3",
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 227/227 [00:00<?, ?it/s]
+```
+</Callout>
+
+We can also as easily read a xiFDR crosslink result file using `parser.read()` - the parser automatically recognizes which kind of file is being read by the contents of the file. 
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 227.0
+    Number of unique crosslinks by peptide: 227.0
+    Number of unique crosslinks by protein: 227.0
+    Number of intra crosslinks: 227.0
+    Number of inter crosslinks: 0.0
+    Number of target-target crosslinks: 225.0
+    Number of target-decoy crosslinks: 2.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 9.619
+    Maximum crosslink score: 40.679
+```
+</Callout>
+
+The `transform.summary()` method also works for printing summary statistics for the crosslinks.
+
+
+```python copy
+sample_crosslink = parser_result["crosslinks"][0]
+for k, v in sample_crosslink.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink
+    completeness: full
+    alpha_peptide: VVDELVKVMGR
+    alpha_peptide_crosslink_position: 7
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [753]
+    alpha_decoy: False
+    beta_peptide: VVDELVKVMGR
+    beta_peptide_crosslink_position: 7
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [753]
+    beta_decoy: False
+    crosslink_type: intra
+    score: 40.679
+    additional_information: None
+```
+</Callout>
+
+Just like for the CSMs, we can also look into specific crosslinks using `parser_result["crosslinks"]`.
+
+Here is an example crosslink, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    [
+        "../../data/xi/1perc_xl_boost_CSM_xiFDR2.2.1.csv",
+        "../../data/xi/1perc_xl_boost_Links_xiFDR2.2.1.csv",
+    ],
+    engine="xiSearch/xiFDR",
+    crosslinker="BS3",
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████| 413/413 [00:00<00:00, 42011.19it/s]
+    Reading xiFDR crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████| 227/227 [00:00<00:00, 22812.61it/s]
+```
+</Callout>
+
+It is also possible to read multiple files into one `parser_result`, this for example makes sense if you have XLs and CSMs from the same run.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 413.0
+    Number of unique CSMs: 413.0
+    Number of intra CSMs: 413.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 411.0
+    Number of target-decoy CSMs: 2.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 6.808
+    Maximum CSM score: 27.268
+    Number of crosslinks: 227.0
+    Number of unique crosslinks by peptide: 227.0
+    Number of unique crosslinks by protein: 227.0
+    Number of intra crosslinks: 227.0
+    Number of inter crosslinks: 0.0
+    Number of target-target crosslinks: 225.0
+    Number of target-decoy crosslinks: 2.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 9.619
+    Maximum crosslink score: 40.679
+```
+</Callout>
+
+If the `parser_result` contains both crosslinks and CSMs, summary statistics for both will be calculated by `transform.summary()`.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xi/r1_Xi1.7.6.7.csv",
+    engine="xiSearch/xiFDR",
+    crosslinker="BS3",
+    parse_modifications=False,
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiSearch CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████| 4648/4648 [00:00<00:00, 24450.57it/s]
+```
+</Callout>
+
+It is of course also possible to read the full, unfiltered and unvalidated search results from xiSearch before they have been processed with xiFDR.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xi/1perc_xl_boost_CSM_xiFDR2.2.1.csv",
+    engine="xiSearch/xiFDR",
+    crosslinker="BS3",
+    parse_modifications=False,
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████| 413/413 [00:00<00:00, 23591.42it/s]
+```
+</Callout>
+
+We can also tell the parser to not parse modifications via `parse_modifications=False`, this might be useful if you do not care about post-translational modifications, or if you have unknown modifications in your results that you would have to manually specify.
+
+In case you want to parse modifications but have unknown modifications in your results, you have to set them via the `modifications` parameter that can be passed via `**kwargs` to `parser.read_xi()`. We will get back to that. 
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: KIECFDSVEISGVEDR
+    alpha_modifications: None
+    alpha_peptide_crosslink_position: 1
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [575]
+    alpha_proteins_peptide_positions: [575]
+    alpha_score: None
+    alpha_decoy: False
+    beta_peptide: KIECFDSVEISGVEDR
+    beta_modifications: None
+    beta_peptide_crosslink_position: 1
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [575]
+    beta_proteins_peptide_positions: [575]
+    beta_score: None
+    beta_decoy: False
+    crosslink_type: intra
+    score: 27.268
+    spectrum_file: XLpeplib_Beveridge_QEx-HFX_DSS_R1.mgf
+    scan_nr: 19140
+    charge: 4
+    retention_time: None
+    ion_mobility: None
+    additional_information: None
+```
+</Callout>
+
+Notice how the fields `alpha_modifications` and `beta_modifications` are now empty (`None`) for our sample CSM in contrast to when we looked at it further up.
+
+*****
+
+## Reading xiSearch/xiFDR Result Files via `parser.read_xi()`
+
+
+```python copy
+parser_result = parser.read_xi("../../data/xi/1perc_xl_boost_CSM_xiFDR2.2.1.csv")
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████| 413/413 [00:00<00:00, 20647.80it/s]
+```
+</Callout>
+
+We can also read xiSearch and xiFDR result files using the `parser.read_xi()` method which allows a more nuanced control over reading the result files - although everything theoretically can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_xi()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_xi.read_xi).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 413.0
+    Number of unique CSMs: 413.0
+    Number of intra CSMs: 413.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 411.0
+    Number of target-decoy CSMs: 2.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 6.808
+    Maximum CSM score: 27.268
+```
+</Callout>
+
+*****
+
+
+```python copy
+from pyXLMS.constants import XI_MODIFICATION_MAPPING
+
+XI_MODIFICATION_MAPPING
+```
+<Callout emoji="✓">
+```
+    {'->': ('Substitution', nan),
+     'cm': ('Carbamidomethyl', 57.021464),
+     'ox': ('Oxidation', 15.994915),
+     'bs3oh': ('BS3 Hydrolized', 156.0786347),
+     'bs3nh2': ('BS3 Amidated', 155.094619105),
+     'bs3loop': ('BS3 Looplink', 138.06808),
+     'bs3_hyd': ('BS3 Hydrolized', 156.0786347),
+     'bs3_ami': ('BS3 Amidated', 155.094619105),
+     'bs3_tris': ('BS3 Tris', 259.141973),
+     'dssoloop': ('DSSO Looplink', 158.00376),
+     'dsso_loop': ('DSSO Looplink', 158.00376),
+     'dsso_hyd': ('DSSO Hydrolized', 176.0143295),
+     'dsso_ami': ('DSSO Amidated', 175.030313905),
+     'dsso_tris': ('DSSO Tris', 279.077658),
+     'dsbuloop': ('DSBU Looplink', 196.08479231),
+     'dsbu_loop': ('DSBU Looplink', 196.08479231),
+     'dsbu_hyd': ('DSBU Hydrolized', 214.095357),
+     'dsbu_ami': ('DSBU Amidated', 213.111341),
+     'dsbu_tris': ('DSBU Tris', 317.158685)}
+```
+</Callout>
+
+
+By default the xiSearch/xiFDR parser considers all modifications that are in `constants.XI_MODIFICATION_MAPPING` as shown above for **pyXLMS version 1.5.2** - a full list of the default xi modifications is given here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.constants.XI_MODIFICATION_MAPPING).
+
+
+```python copy
+my_mods = dict(XI_MODIFICATION_MAPPING)
+my_mods["me"] = ("Methylation", 14.01565)
+my_mods
+```
+<Callout emoji="✓">
+```
+    {'->': ('Substitution', nan),
+     'cm': ('Carbamidomethyl', 57.021464),
+     'ox': ('Oxidation', 15.994915),
+     'bs3oh': ('BS3 Hydrolized', 156.0786347),
+     'bs3nh2': ('BS3 Amidated', 155.094619105),
+     'bs3loop': ('BS3 Looplink', 138.06808),
+     'bs3_hyd': ('BS3 Hydrolized', 156.0786347),
+     'bs3_ami': ('BS3 Amidated', 155.094619105),
+     'bs3_tris': ('BS3 Tris', 259.141973),
+     'dssoloop': ('DSSO Looplink', 158.00376),
+     'dsso_loop': ('DSSO Looplink', 158.00376),
+     'dsso_hyd': ('DSSO Hydrolized', 176.0143295),
+     'dsso_ami': ('DSSO Amidated', 175.030313905),
+     'dsso_tris': ('DSSO Tris', 279.077658),
+     'dsbuloop': ('DSBU Looplink', 196.08479231),
+     'dsbu_loop': ('DSBU Looplink', 196.08479231),
+     'dsbu_hyd': ('DSBU Hydrolized', 214.095357),
+     'dsbu_ami': ('DSBU Amidated', 213.111341),
+     'dsbu_tris': ('DSBU Tris', 317.158685),
+     'me': ('Methylation', 14.01565)}
+```
+</Callout>
+
+
+If you have any additional modifications in your result file(s) the parser needs to know about them, which is done via the `modifications` parameter that allows for passing a custom dictionary of modifications. It is usually a good idea to base this custom dictionary on `constants.XI_MODIFICATION_MAPPING` and add your modifications after, as shown here for methylation.
+
+
+```python copy
+parser_result = parser.read_xi(
+    "../../data/xi/1perc_xl_boost_CSM_xiFDR2.2.1.csv", modifications=my_mods
+)
+```
+<Callout emoji="✓">
+```
+    Reading xiFDR CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████| 413/413 [00:00<00:00, 27258.45it/s]
+```
+</Callout>
+
+You can then pass the full list of expected modifications `my_mods` via the `modifications` parameter.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 413.0
+    Number of unique CSMs: 413.0
+    Number of intra CSMs: 413.0
+    Number of inter CSMs: 0.0
+    Number of target-target CSMs: 411.0
+    Number of target-decoy CSMs: 2.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 6.808
+    Maximum CSM score: 27.268
+```
+</Callout>
+
+*****
+
+There are several other parameters that can be set, you can read more about them here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_xi.read_xi).

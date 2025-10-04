@@ -1,0 +1,487 @@
+import { Callout } from 'nextra/components'
+
+# Reading XlinkX Result Files
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.1
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All functionality to parse crosslink-spectrum-matches (CSMs) and crosslinks (XLs) from XlinkX result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
+
+## Reading XlinkX Result Files via `parser.read()`
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_CSMs.txt",
+    engine="XlinkX",
+    crosslinker="DSSO",
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 823/823 [00:00<00:00, 3760.48it/s]
+```
+</Callout>
+
+We can read any XlinkX result file using the `parser.read()` method and setting `engine="XlinkX"`. The method also requires us to specify the used crosslinker, in this case DSSO was used (`crosslinker="DSSO"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
+
+
+```python copy
+for k, v in parser_result.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: XlinkX
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+As you can see from the `parser_result` the XlinkX result file contained CSMs. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 823.0
+    Number of unique CSMs: 823.0
+    Number of intra CSMs: 732.0
+    Number of inter CSMs: 91.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 7.45
+    Maximum CSM score: 445.6
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about our read CSMs. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: KNLIGALLFDSGETAEATR
+    alpha_modifications: {1: ('DSSO', 158.00376)}
+    alpha_peptide_crosslink_position: 1
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [49]
+    alpha_proteins_peptide_positions: [49]
+    alpha_score: None
+    alpha_decoy: None
+    beta_peptide: LVDSTDKADLR
+    beta_modifications: {7: ('DSSO', 158.00376)}
+    beta_peptide_crosslink_position: 7
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [152]
+    beta_proteins_peptide_positions: [146]
+    beta_score: None
+    beta_decoy: None
+    crosslink_type: intra
+    score: 445.6
+    spectrum_file: XLpeplib_Beveridge_Lumos_DSSO_MS3.raw
+    scan_nr: 43526
+    charge: 3
+    retention_time: 5316.719999999999
+    ion_mobility: None
+    additional_information: None
+```
+</Callout>
+
+Using `parser_result["crosslink-spectrum-matches"][0]` we can get the first CSM of the file and take a closer look at that.
+
+Here is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_Crosslinks.xlsx",
+    engine="XlinkX",
+    crosslinker="DSSO",
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX crosslinks...: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████| 236/236 [00:00<00:00, 9386.79it/s]
+```
+</Callout>
+
+We can also as easily read a crosslink result file, notice how this time we also read a Microsoft Excel file instead of a txt file and don't even have to change anything. This is because when a filename is given, the parser will automatically detect the corresponding extension and use the correct sub-method. This behaviour is controlled by the `format` parameter in the [XlinkX parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_xlinkx.read_xlinkx). More about that later...
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 236.0
+    Number of unique crosslinks by peptide: 236.0
+    Number of unique crosslinks by protein: 236.0
+    Number of intra crosslinks: 174.0
+    Number of inter crosslinks: 62.0
+    Number of target-target crosslinks: 236.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 11.49
+    Maximum crosslink score: 445.6
+```
+</Callout>
+
+Similarly, with the `transform.summary()` method we can also print out some summary statistics about our read crosslinks.
+
+
+```python copy
+sample_crosslink = parser_result["crosslinks"][0]
+for k, v in sample_crosslink.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink
+    completeness: full
+    alpha_peptide: KNLIGALLFDSGETAEATR
+    alpha_peptide_crosslink_position: 1
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [49]
+    alpha_decoy: False
+    beta_peptide: LVDSTDKADLR
+    beta_peptide_crosslink_position: 7
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [152]
+    beta_decoy: False
+    crosslink_type: intra
+    score: 445.6
+    additional_information: None
+```
+</Callout>
+
+Just like for the CSMs, we can also look into specific crosslinks using `parser_result["crosslinks"]`
+
+Here is an example crosslink, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    [
+        "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_CSMs.txt",
+        "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_Crosslinks.xlsx",
+    ],
+    engine="XlinkX",
+    crosslinker="DSSO",
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 823/823 [00:00<00:00, 10904.66it/s]
+    Reading XlinkX crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 236/236 [00:00<00:00, 19668.48it/s]
+```
+</Callout>
+
+It's also possible to read multiple files into one `parser_result`, this for example makes sense if you have crosslinks and crosslink-spectrum-matches from the same run.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 823.0
+    Number of unique CSMs: 823.0
+    Number of intra CSMs: 732.0
+    Number of inter CSMs: 91.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 7.45
+    Maximum CSM score: 445.6
+    Number of crosslinks: 236.0
+    Number of unique crosslinks by peptide: 236.0
+    Number of unique crosslinks by protein: 236.0
+    Number of intra crosslinks: 174.0
+    Number of inter crosslinks: 62.0
+    Number of target-target crosslinks: 236.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 11.49
+    Maximum crosslink score: 445.6
+```
+</Callout>
+
+If the `parser_result` contains both crosslinks and CSMs, summary statistics for both will be calculated by `transform.summary()`.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_CSMs.txt",
+    engine="XlinkX",
+    crosslinker="DSSO",
+    parse_modifications=False,
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 823/823 [00:00<00:00, 13165.59it/s]
+```
+</Callout>
+
+We can also tell the parser to not parse modifications via `parse_modifications=False`, this might be useful if you don't care about post-translational-modifications, or if you have unknown modifications in your results that you would have to manually specify - _and you don't want to do that_.
+
+In case you want to parse modifications but have unknown modifications in your results, you have to set them via the `modifications` parameter that can be passed via `**kwargs` to `parser.read_xlinkx()`. More about that later...
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: KNLIGALLFDSGETAEATR
+    alpha_modifications: None
+    alpha_peptide_crosslink_position: 1
+    alpha_proteins: ['Cas9']
+    alpha_proteins_crosslink_positions: [49]
+    alpha_proteins_peptide_positions: [49]
+    alpha_score: None
+    alpha_decoy: None
+    beta_peptide: LVDSTDKADLR
+    beta_modifications: None
+    beta_peptide_crosslink_position: 7
+    beta_proteins: ['Cas9']
+    beta_proteins_crosslink_positions: [152]
+    beta_proteins_peptide_positions: [146]
+    beta_score: None
+    beta_decoy: None
+    crosslink_type: intra
+    score: 445.6
+    spectrum_file: XLpeplib_Beveridge_Lumos_DSSO_MS3.raw
+    scan_nr: 43526
+    charge: 3
+    retention_time: 5316.719999999999
+    ion_mobility: None
+    additional_information: None
+```
+</Callout>
+
+Notice that this time the fields `alpha_modifications` and `beta_modifications` are empty (`None`) for our sample CSM in contrast to when we looked at it further up.
+
+*****
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3.pdResult",
+    engine="XlinkX",
+    crosslinker="DSSO",
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 841/841 [00:00<00:00, 10848.13it/s]
+    Reading XlinkX CSMs...: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| 9/9 [00:00<00:00, 8989.93it/s]
+    Reading XlinkX crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 262/262 [00:00<00:00, 15409.21it/s]
+```
+</Callout>
+
+Last but not least you can also directly read a `pdResult` from Proteome Discoverer which will automatically read all CSMs and crosslinks detected with XlinkX.
+
+*****
+
+## Reading XlinkX Result Files via `parser.read_xlinkx()`
+
+
+```python copy
+parser_result = parser.read_xlinkx(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_CSMs.txt"
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 823/823 [00:00<00:00, 11043.29it/s]
+```
+</Callout>
+
+We can also read any XlinkX result file using the `parser.read_xlinkx()` method which allows a more nuanced control over reading XlinkX result files - even though theoretically everything can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_xlinkx()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_xlinkx.read_xlinkx).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 823.0
+    Number of unique CSMs: 823.0
+    Number of intra CSMs: 732.0
+    Number of inter CSMs: 91.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 7.45
+    Maximum CSM score: 445.6
+```
+</Callout>
+
+*****
+
+
+```python copy
+from pyXLMS.constants import MODIFICATIONS
+
+MODIFICATIONS
+```
+<Callout emoji="✓">
+```
+    {'Carbamidomethyl': 57.021464,
+     'Oxidation': 15.994915,
+     'Phospho': 79.966331,
+     'Acetyl': 42.010565,
+     'BS3': 138.06808,
+     'DSS': 138.06808,
+     'DSSO': 158.00376,
+     'DSBU': 196.08479231,
+     'ADH': 138.09054635,
+     'DSBSO': 308.03883,
+     'PhoX': 209.97181,
+     'DSG': 96.0211293726}
+```
+</Callout>
+
+
+By default the XlinkX parser considers all modifications that are in `constants.MODIFICATIONS` as shown above for **pyXLMS version 1.5.1** - a full list of default modifications is given here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.constants.MODIFICATIONS).
+
+
+```python copy
+my_mods = dict(MODIFICATIONS)
+my_mods["Methyl"] = 14.01565
+my_mods
+```
+<Callout emoji="✓">
+```
+    {'Carbamidomethyl': 57.021464,
+     'Oxidation': 15.994915,
+     'Phospho': 79.966331,
+     'Acetyl': 42.010565,
+     'BS3': 138.06808,
+     'DSS': 138.06808,
+     'DSSO': 158.00376,
+     'DSBU': 196.08479231,
+     'ADH': 138.09054635,
+     'DSBSO': 308.03883,
+     'PhoX': 209.97181,
+     'DSG': 96.0211293726,
+     'Methyl': 14.01565}
+```
+</Callout>
+
+
+If you have any additional modifications in your result file(s) the parser needs to know about them, which is done via the `modifications` parameter that allows for passing a custom dictionary of modifications. It is usually a good idea to base this custom dictionary on `constants.MODIFICATIONS` and add your modifications after, as shown above for methylation.
+
+
+```python copy
+parser_result = parser.read_xlinkx(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_CSMs.txt",
+    modifications=my_mods,
+)
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX CSMs...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 823/823 [00:00<00:00, 11045.41it/s]
+```
+</Callout>
+
+You can then pass the full list of expected modifications `my_mods` via the `modifications` parameter.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 823.0
+    Number of unique CSMs: 823.0
+    Number of intra CSMs: 732.0
+    Number of inter CSMs: 91.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 7.45
+    Maximum CSM score: 445.6
+```
+</Callout>
+
+*****
+
+
+```python copy
+with open(
+    "../../data/xlinkx/XLpeplib_Beveridge_Lumos_DSSO_MS3_Crosslinks.txt", "r"
+) as f:
+    parser_result = parser.read_xlinkx(f, format="txt")
+    f.close()
+```
+<Callout emoji="✓">
+```
+    Reading XlinkX crosslinks...: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████| 236/236 [00:00<00:00, 13884.14it/s]
+```
+</Callout>
+
+The `format` parameter is necessary when files are directly read from a file-stream because the format then cannot be automatically be inferred, such as in the case above. Please do note that reading of pdResult files from a file-stream is not supported. The `format` parameter accepts the following values: `"auto"`, `"csv"`, `"txt"`, `"tsv"`, `"xlsx"`, `"pdresult"`.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 236.0
+    Number of unique crosslinks by peptide: 236.0
+    Number of unique crosslinks by protein: 236.0
+    Number of intra crosslinks: 174.0
+    Number of inter crosslinks: 62.0
+    Number of target-target crosslinks: 236.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 11.49
+    Maximum crosslink score: 445.6
+```
+</Callout>
+
+*****
+
+There are several other parameters that can be set, you can read more about them here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_xlinkx.read_xlinkx).
