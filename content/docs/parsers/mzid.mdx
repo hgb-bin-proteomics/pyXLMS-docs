@@ -1,0 +1,184 @@
+import { Callout } from 'nextra/components'
+
+# Reading mzIdentML Result Files
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.1
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+All functionality to parse crosslink-spectrum-matches (CSMs) from [mzIdentML](https://www.psidev.info/mzidentml) result files is available via the `parser` submodule. We also import the `transform` submodule to show some summary statistics of the read files.
+
+> [!WARNING]
+>
+> **Please note that reading mzIdentML files is an experimental feature! Errors might still occur!**
+
+## Reading mzIdentML Result Files via `parser.read()`
+
+
+```python copy
+parser_result = parser.read(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.mzid",
+    engine="mzIdentML",
+    crosslinker="DSS",
+)
+```
+<Callout type="warning">
+```
+    C:\Users\micha.birklbauer\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\parser\parser_xldbse_mzid.py:142: UserWarning: Please be aware that mzIdentML parsing is currently an experimental feature!
+    Please check the documentation for parser.read_mzid for more information!
+      warnings.warn(
+    100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1353/1353 [00:00<00:00, 104076.83it/s]
+```
+</Callout>
+
+We can read any mzIdentML result file using the `parser.read()` method and setting `engine="mzIdentML"`. The method also requires us to specify the used crosslinker, in this case DSS was used (`crosslinker="DSS"`). You can read the documentation for the `parser.read()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read).
+
+
+```python copy
+for k, v in parser_result.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: mzIdentML
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `parser.read()` method returns a dictionary with a set of specified keys and their values. We refer to this dictionary as a `parser_result` object. All `parser.read*` methods return such a `parser_result` object, you can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+As you can see from the `parser_result` the mzIdentML result file contained CSMs. We would be able to access those via `parser_result["crosslink-spectrum-matches"]`.
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 786.0
+    Number of unique CSMs: 786.0
+    Number of intra CSMs: 0.0
+    Number of inter CSMs: 786.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: nan
+    Maximum CSM score: nan
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about our read CSMs. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+sample_csm = parser_result["crosslink-spectrum-matches"][0]
+for k, v in sample_csm.items():
+    print(f"{k}: {v}")
+```
+<Callout emoji="✓">
+```
+    data_type: crosslink-spectrum-match
+    completeness: partial
+    alpha_peptide: GQKNSR
+    alpha_modifications: None
+    alpha_peptide_crosslink_position: 3
+    alpha_proteins: None
+    alpha_proteins_crosslink_positions: None
+    alpha_proteins_peptide_positions: None
+    alpha_score: None
+    alpha_decoy: None
+    beta_peptide: GQKNSR
+    beta_modifications: None
+    beta_peptide_crosslink_position: 3
+    beta_proteins: None
+    beta_proteins_crosslink_positions: None
+    beta_proteins_peptide_positions: None
+    beta_score: None
+    beta_decoy: None
+    crosslink_type: inter
+    score: None
+    spectrum_file: C:\Users\P42587\Documents\GitHub\pdresult_reader\study_folder\XLpeplib_Beveridge_QEx-HFX_DSS_R1.mzML
+    scan_nr: 1
+    charge: None
+    retention_time: None
+    ion_mobility: None
+    additional_information: None
+```
+</Callout>
+
+Here is an example CSM, you can learn more about the specific attributes and their values here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+*****
+
+
+```python copy
+type(parser_result["crosslinks"])
+```
+<Callout emoji="✓">
+```
+    NoneType
+```
+</Callout>
+
+
+In this example `parser_result["crosslinks"]` is `None`  because the mzIdentML format does not report any crosslinks. Therefore, no crosslinks can be displayed here.
+
+*****
+
+## Reading mzIdentML Result Files via `parser.read_mzid()`
+
+
+```python copy
+parser_result = parser.read_mzid(
+    "../../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.mzid"
+)
+```
+<Callout type="warning">
+```
+    C:\Users\micha.birklbauer\AppData\Local\Programs\Python\Python312\Lib\site-packages\pyXLMS\parser\parser_xldbse_mzid.py:142: UserWarning: Please be aware that mzIdentML parsing is currently an experimental feature!
+    Please check the documentation for parser.read_mzid for more information!
+      warnings.warn(
+    100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1353/1353 [00:00<00:00, 87245.65it/s]
+```
+</Callout>
+
+We can also read any mzIdentML result file using the `parser.read_mzid()` method which allows a more nuanced control over reading mzIdentML result files - even though theoretically everything can be done with the `parser.read()` function as well. You can read the documentation for the `parser.read_mzid()` method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_mzid.read_mzid).
+
+
+```python copy
+_ = transform.summary(parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 786.0
+    Number of unique CSMs: 786.0
+    Number of intra CSMs: 0.0
+    Number of inter CSMs: 786.0
+    Number of target-target CSMs: 0.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: nan
+    Maximum CSM score: nan
+```
+</Callout>
+
+*****
+
+There are several other parameters that can be set, you can read more about them here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_mzid.read_mzid).
