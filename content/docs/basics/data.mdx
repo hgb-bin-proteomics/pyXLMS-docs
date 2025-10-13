@@ -1,0 +1,641 @@
+import { Callout } from 'nextra/components'
+
+# Creating Crosslinks and Crosslink-Spectrum-Matches with pyXLMS
+
+> [!TIP]
+>
+> **Before you start please read `Data Types in pyXLMS` \[[docs](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md), [page](/docs/basics/data_types)\] to get familiar with how pyXLMS encodes and stores data.**
+
+Let's consider the following proteins:
+```text filename="proteins.fasta"
+>PROTEIN_A
+GAASMDKKYSIGLAIGTNSVGWAVITDEYKVPSKKFKVLGNTDRHSIKKNLIG
+>PROTEIN_B
+KVKYVTEGMRKPAFLSGEQKKAIVDLLFKTNRKVTVKQLKEDYFKKIECFD
+>PROTEIN_C
+AKVKYVTEGMRKPAFLSGEQKKAIVDLLFKTNRKVTVKQLKEDYFKKIECF
+```
+And the following DSS crosslinked peptides:
+- _K\[K\]YSIGLAI_ ➡️ crosslinked at K2:
+  - Positions:
+    - peptide position in `PROTEIN_A`: 7; crosslink position in `PROTEIN_A`: 8
+- _KV\[K\]YVTEGMR_ ➡️ crosslinked at K3:
+  - Positions:
+    - peptide position in `PROTEIN_B`: 1; crosslink position in `PROTEIN_B`: 3
+    - peptide position in `PROTEIN_C`: 2; crosslink position in `PROTEIN_C`: 4
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.3
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import data
+```
+
+All functionality to create crosslink-spectrum-matches and crosslinks is available via the `data` submodule.
+
+
+```python copy
+from typing import Optional, Dict, Tuple, List, Any
+```
+
+We will also import some types for type hinting.
+
+## Creating Crosslinks
+
+To create a crosslink we need:
+
+### Required Information
+
+
+```python copy
+peptide_a: str = "KKYSIGLAI"
+peptide_b: str = "KVKYVTEGMR"
+```
+
+- The unmodified amino acid sequence of the alpha and beta peptide.
+
+
+```python copy
+xl_position_peptide_a: int = 2
+xl_position_peptide_b: int = 3
+```
+
+- The position of the crosslinker in the sequence of the alpha peptide and the beta peptide (1-based).
+
+### Optional Information
+
+All of these parameters can be `None`.
+
+
+```python copy
+proteins_a: Optional[List[str]] = ["PROTEIN_A"]
+proteins_b: Optional[List[str]] = ["PROTEIN_B", "PROTEIN_C"]
+```
+
+- The accessions of proteins that the alpha and beta peptide are associated with.
+
+
+```python copy
+xl_position_proteins_a: Optional[List[int]] = [8]
+xl_position_proteins_b: Optional[List[int]] = [3, 4]
+```
+
+- Positions of the crosslink in the proteins of the alpha and beta peptide (1-based).
+
+
+```python copy
+decoy_a: Optional[bool] = False
+decoy_b: Optional[bool] = False
+```
+
+- Whether the alpha and beta peptide are from the decoy database or not.
+
+
+```python copy
+score: Optional[float] = 29.31
+```
+
+- The score of the crosslink.
+
+
+```python copy
+additional_information: Optional[Dict[str, Any]] = None
+```
+
+- A dictionary with additional information associated with the crosslink.
+
+### Creating Crosslinks via `data.create_crosslink()`
+
+
+```python copy
+xl = data.create_crosslink(
+    peptide_a=peptide_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    proteins_a=proteins_a,
+    xl_position_proteins_a=xl_position_proteins_a,
+    decoy_a=decoy_a,
+    peptide_b=peptide_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+    proteins_b=proteins_b,
+    xl_position_proteins_b=xl_position_proteins_b,
+    decoy_b=decoy_b,
+    score=score,
+    additional_information=additional_information,
+)
+```
+
+We can then create our crosslink with the `data.create_crosslink()` pyXLMS function by passing all the information to the corresponding arguments of the function. You can read more about the `create_crosslink()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink).
+
+
+```python copy
+xl
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'full',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['PROTEIN_A'],
+     'alpha_proteins_crosslink_positions': [8],
+     'alpha_decoy': False,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': ['PROTEIN_B', 'PROTEIN_C'],
+     'beta_proteins_crosslink_positions': [3, 4],
+     'beta_decoy': False,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'additional_information': None}
+```
+</Callout>
+
+
+Our created crosslink is nothing else than a native python dictionary with specific keys - as laid out in the [pyXLMS data types specification](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+
+```python copy
+xl = data.create_crosslink(
+    peptide_a=peptide_b,
+    xl_position_peptide_a=xl_position_peptide_b,
+    proteins_a=proteins_b,
+    xl_position_proteins_a=xl_position_proteins_b,
+    decoy_a=decoy_b,
+    peptide_b=peptide_a,
+    xl_position_peptide_b=xl_position_peptide_a,
+    proteins_b=proteins_a,
+    xl_position_proteins_b=xl_position_proteins_a,
+    decoy_b=decoy_a,
+    score=score,
+    additional_information=additional_information,
+)
+xl
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'full',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['PROTEIN_A'],
+     'alpha_proteins_crosslink_positions': [8],
+     'alpha_decoy': False,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': ['PROTEIN_B', 'PROTEIN_C'],
+     'beta_proteins_crosslink_positions': [3, 4],
+     'beta_decoy': False,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'additional_information': None}
+```
+</Callout>
+
+> [!IMPORTANT]
+>
+> **Switching the alpha and beta peptide will create the same crosslink as peptide order is determined within the `create_crosslink()` function itself to maintain consistency.**
+
+### Creating Crosslinks via `data.create_crosslink_min()`
+
+
+```python copy
+xl = data.create_crosslink_min(
+    peptide_a=peptide_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    peptide_b=peptide_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+)
+```
+
+For convenience there is also a `data.create_crosslink_min()` function that allows fast creation of crosslinks with minimal input. Internally this is just a wrapper for `data.create_crosslink()` that sets all optional parameters to `None`. You can read more about the `create_crosslink_min()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink_min).
+
+
+```python copy
+xl
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': None,
+     'alpha_proteins_crosslink_positions': None,
+     'alpha_decoy': None,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': None,
+     'beta_proteins_crosslink_positions': None,
+     'beta_decoy': None,
+     'crosslink_type': 'inter',
+     'score': None,
+     'additional_information': None}
+```
+</Callout>
+
+
+We get the same crosslink dictionary but of course all optional information is now `None`.
+
+
+```python copy
+xl = data.create_crosslink_min(
+    peptide_a=peptide_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    peptide_b=peptide_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+    score=score,
+)
+```
+
+However, we can of course still pass optional information as well (as in this case `score`) to set it.
+
+
+```python copy
+xl
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': None,
+     'alpha_proteins_crosslink_positions': None,
+     'alpha_decoy': None,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': None,
+     'beta_proteins_crosslink_positions': None,
+     'beta_decoy': None,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'additional_information': None}
+```
+</Callout>
+
+
+The created crosslink now also has the `'score'` entry set.
+
+## Creating Crosslink-Spectrum-Matches
+
+Crosslink-spectrum-matches associate a crosslink with a specific mass spectrum. To create a crosslink-spectrum-match we need the information of the crosslink and additionally we need:
+
+### Required Information
+
+
+```python copy
+spectrum_file: str = "Experiment_DSS_Run1_MS2.mzML"
+```
+
+- Name of the spectrum file the crosslink-spectrum-match was identified in.
+
+
+```python copy
+scan_nr: int = 21851
+```
+
+- The corresponding scan number of the crosslink-spectrum-match.
+
+### Optional Information
+
+All of these parameters can be `None`.
+
+
+```python copy
+modifications_a: Optional[Dict[int, Tuple[str, float]]] = {2: ("DSS", 138.06808)}
+modifications_b: Optional[Dict[int, Tuple[str, float]]] = {3: ("DSS", 138.06808)}
+```
+
+- The modifications of the alpha and beta peptide given as a dictionary that maps peptide position (1-based) to modification given as a tuple of modification name and modification delta mass. N-terminal modifications are denoted with position 0. C-terminal modifications are denoted with position `len(peptide) + 1`. If the peptide is not modified an empty dictionary should be given.
+
+
+```python copy
+pep_position_proteins_a: Optional[List[int]] = [7]
+pep_position_proteins_b: Optional[List[int]] = [1, 2]
+```
+
+- Positions of the alpha and beta peptide in the corresponding proteins (1-based).
+
+
+```python copy
+score_a: Optional[float] = 138.62
+score_b: Optional[float] = 29.31
+```
+
+- Identification score of the alpha and beta peptide.
+
+
+```python copy
+charge: Optional[int] = 3
+```
+
+- The precursor charge of the corresponding mass spectrum of the crosslink-spectrum-match.
+
+
+```python copy
+rt: Optional[float] = 5693.0
+```
+
+- The retention time of the corresponding mass spectrum of the crosslink-spectrum-match in seconds.
+
+
+```python copy
+im_cv: Optional[float] = None
+```
+
+- The ion mobility or compensation voltage of the corresponding mass spectrum of the crosslink-spectrum-match.
+
+
+```python copy
+additional_information: Optional[Dict[str, Any]] = {"q-value": 0.00034}
+```
+
+- A dictionary with additional information associated with the crosslink-spectrum-match.
+
+### Creating Crosslink-Spectrum-Matches via `data.create_csm()`
+
+
+```python copy
+csm = data.create_csm(
+    peptide_a=peptide_a,
+    modifications_a=modifications_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    proteins_a=proteins_a,
+    xl_position_proteins_a=xl_position_proteins_a,
+    pep_position_proteins_a=pep_position_proteins_a,
+    score_a=score_a,
+    decoy_a=decoy_a,
+    peptide_b=peptide_b,
+    modifications_b=modifications_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+    proteins_b=proteins_b,
+    xl_position_proteins_b=xl_position_proteins_b,
+    pep_position_proteins_b=pep_position_proteins_b,
+    score_b=score_b,
+    decoy_b=decoy_b,
+    score=score,
+    spectrum_file=spectrum_file,
+    scan_nr=scan_nr,
+    charge=charge,
+    rt=rt,
+    im_cv=im_cv,
+    additional_information=additional_information,
+)
+```
+
+We can then create our crosslink-spectrum-match with the `data.create_csm()` pyXLMS function by passing all the information to the corresponding arguments of the function. You can read more about the `create_csm()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm).
+
+
+```python copy
+csm
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink-spectrum-match',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_modifications': {2: ('DSS', 138.06808)},
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['PROTEIN_A'],
+     'alpha_proteins_crosslink_positions': [8],
+     'alpha_proteins_peptide_positions': [7],
+     'alpha_score': 138.62,
+     'alpha_decoy': False,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_modifications': {3: ('DSS', 138.06808)},
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': ['PROTEIN_B', 'PROTEIN_C'],
+     'beta_proteins_crosslink_positions': [3, 4],
+     'beta_proteins_peptide_positions': [1, 2],
+     'beta_score': 29.31,
+     'beta_decoy': False,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'spectrum_file': 'Experiment_DSS_Run1_MS2.mzML',
+     'scan_nr': 21851,
+     'charge': 3,
+     'retention_time': 5693.0,
+     'ion_mobility': None,
+     'additional_information': {'q-value': 0.00034}}
+```
+</Callout>
+
+
+Our created crosslink-spectrum-match is nothing else than a native python dictionary with specific keys - as laid out in the [pyXLMS data types specification](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+
+```python copy
+csm = data.create_csm(
+    peptide_a=peptide_b,
+    modifications_a=modifications_b,
+    xl_position_peptide_a=xl_position_peptide_b,
+    proteins_a=proteins_b,
+    xl_position_proteins_a=xl_position_proteins_b,
+    pep_position_proteins_a=pep_position_proteins_b,
+    score_a=score_b,
+    decoy_a=decoy_b,
+    peptide_b=peptide_a,
+    modifications_b=modifications_a,
+    xl_position_peptide_b=xl_position_peptide_a,
+    proteins_b=proteins_a,
+    xl_position_proteins_b=xl_position_proteins_a,
+    pep_position_proteins_b=pep_position_proteins_a,
+    score_b=score_a,
+    decoy_b=decoy_a,
+    score=score,
+    spectrum_file=spectrum_file,
+    scan_nr=scan_nr,
+    charge=charge,
+    rt=rt,
+    im_cv=im_cv,
+    additional_information=additional_information,
+)
+csm
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink-spectrum-match',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_modifications': {2: ('DSS', 138.06808)},
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': ['PROTEIN_A'],
+     'alpha_proteins_crosslink_positions': [8],
+     'alpha_proteins_peptide_positions': [7],
+     'alpha_score': 138.62,
+     'alpha_decoy': False,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_modifications': {3: ('DSS', 138.06808)},
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': ['PROTEIN_B', 'PROTEIN_C'],
+     'beta_proteins_crosslink_positions': [3, 4],
+     'beta_proteins_peptide_positions': [1, 2],
+     'beta_score': 29.31,
+     'beta_decoy': False,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'spectrum_file': 'Experiment_DSS_Run1_MS2.mzML',
+     'scan_nr': 21851,
+     'charge': 3,
+     'retention_time': 5693.0,
+     'ion_mobility': None,
+     'additional_information': {'q-value': 0.00034}}
+```
+</Callout>
+
+> [!IMPORTANT]
+>
+> **Switching the alpha and beta peptide will create the same crosslink-spectrum-match as peptide order is determined within the `create_csm()` function itself to maintain consistency.**
+
+### Creating Crosslink-Spectrum-Matches via `data.create_csm_min()`
+
+
+```python copy
+csm = data.create_csm_min(
+    peptide_a=peptide_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    peptide_b=peptide_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+    spectrum_file=spectrum_file,
+    scan_nr=scan_nr,
+)
+```
+
+For convenience there is also a `data.create_csm_min()` function that allows fast creation of crosslink-spectrum-matches with minimal input. Internally this is just a wrapper for `data.create_csm()` that sets all optional parameters to `None`. You can read more about the `create_csm_min()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_csm_min).
+
+
+```python copy
+csm
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink-spectrum-match',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_modifications': None,
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': None,
+     'alpha_proteins_crosslink_positions': None,
+     'alpha_proteins_peptide_positions': None,
+     'alpha_score': None,
+     'alpha_decoy': None,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_modifications': None,
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': None,
+     'beta_proteins_crosslink_positions': None,
+     'beta_proteins_peptide_positions': None,
+     'beta_score': None,
+     'beta_decoy': None,
+     'crosslink_type': 'inter',
+     'score': None,
+     'spectrum_file': 'Experiment_DSS_Run1_MS2.mzML',
+     'scan_nr': 21851,
+     'charge': None,
+     'retention_time': None,
+     'ion_mobility': None,
+     'additional_information': None}
+```
+</Callout>
+
+
+We get the same crosslink-spectrum-match dictionary but of course all optional information is now `None`.
+
+
+```python copy
+csm = data.create_csm_min(
+    peptide_a=peptide_a,
+    xl_position_peptide_a=xl_position_peptide_a,
+    peptide_b=peptide_b,
+    xl_position_peptide_b=xl_position_peptide_b,
+    spectrum_file=spectrum_file,
+    scan_nr=scan_nr,
+    score=score,
+)
+```
+
+However, we can of course still pass optional information as well (as in this case `score`) to set it.
+
+
+```python copy
+csm
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink-spectrum-match',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_modifications': None,
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': None,
+     'alpha_proteins_crosslink_positions': None,
+     'alpha_proteins_peptide_positions': None,
+     'alpha_score': None,
+     'alpha_decoy': None,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_modifications': None,
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': None,
+     'beta_proteins_crosslink_positions': None,
+     'beta_proteins_peptide_positions': None,
+     'beta_score': None,
+     'beta_decoy': None,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'spectrum_file': 'Experiment_DSS_Run1_MS2.mzML',
+     'scan_nr': 21851,
+     'charge': None,
+     'retention_time': None,
+     'ion_mobility': None,
+     'additional_information': None}
+```
+</Callout>
+
+
+The created crosslink-spectrum-match now also has the `'score'` entry set.
+
+## Creating Crosslinks from Crosslink-Spectrum-Matches
+
+
+```python copy
+xl = data.create_crosslink_from_csm(csm)
+```
+
+We can also directly create a crosslink from a crosslink-spectrum-match by passing the crosslink-spectrum-match to the function `data.create_crosslink_from_csm()`. You can read more about the function and its parameter here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_crosslink_from_csm).
+
+
+```python copy
+xl
+```
+<Callout emoji="✓">
+```
+    {'data_type': 'crosslink',
+     'completeness': 'partial',
+     'alpha_peptide': 'KKYSIGLAI',
+     'alpha_peptide_crosslink_position': 2,
+     'alpha_proteins': None,
+     'alpha_proteins_crosslink_positions': None,
+     'alpha_decoy': None,
+     'beta_peptide': 'KVKYVTEGMR',
+     'beta_peptide_crosslink_position': 3,
+     'beta_proteins': None,
+     'beta_proteins_crosslink_positions': None,
+     'beta_decoy': None,
+     'crosslink_type': 'inter',
+     'score': 29.31,
+     'additional_information': None}
+```
+</Callout>
+
+
+Exactly as in our `data.create_crosslink()` function, our created crosslink is nothing else than a native python dictionary with specific keys - as laid out in the [pyXLMS data types specification](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
