@@ -1,0 +1,291 @@
+import { Callout } from 'nextra/components'
+
+# Serializing pyXLMS Objects
+
+If you want to save your data to continue your analysis at a later point or with a different tool or programming language you need serialization. pyXLMS supports two different ways to serialize and de-serialize crosslink-spectrum-matches, crosslinks, and `parser_result` objects which is illustrated by the examples below.
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.3
+```
+</Callout>
+
+
+```python copy
+from pyXLMS import parser
+from pyXLMS import transform
+```
+
+We import the `parser` submodule to read crosslink-spectrum-matches and crosslinks, and the `transform` submodule for serialization and to show some summary statistics.
+
+
+```python copy
+parser_result = parser.read(
+    "../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|███████████████████████████████████████████████████| 826/826 [00:00<00:00, 3615.67it/s]
+    Reading MS Annika crosslinks...: 100%|█████████████████████████████████████████████| 300/300 [00:00<00:00, 8051.05it/s]
+```
+</Callout>
+
+We read crosslink-spectrum-matches and crosslinks using the [generic parser](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read) from a single `.pdResult` file.
+
+
+```python copy
+csms = parser_result["crosslink-spectrum-matches"]
+xls = parser_result["crosslinks"]
+```
+
+For easier access we assign our crosslink-spectrum-matches to the variable `csms` and our crosslinks to the variable `xls`.
+
+
+```python copy
+_ = transform.summary(csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+With the `transform.summary()` method we can also print out some summary statistics about our read crosslink-spectrum-matches. You can read more about the method here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.summary.summary).
+
+
+```python copy
+_ = transform.summary(xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+Also some summary statistics about our read crosslinks.
+
+## Serialization to Tables
+
+pyXLMS crosslink-spectrum-matches and crosslinks can be serialized and saved as tables to any format supported by [pandas](https://pandas.pydata.org/).
+De-serialization, e.g. reading the created tables, is only available via text-based formats (e.g. `csv`, `tsv`), Microsoft Excel format, and [parquet](https://parquet.apache.org/) format.
+
+> [!WARNING]
+>
+> **Table-based serialization of `parser_result` objects is not supported!**
+
+### Serialization to CSV
+
+
+```python copy
+transform.to_dataframe(csms).to_csv("csms.csv")
+```
+
+Serialization to tables is facilitated via the `transform.to_dataframe()` function \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.to_dataframe.to_dataframe)\] which returns a [pandas](https://pandas.pydata.org/) `DataFrame` and can then be saved to disk via one of the pandas functions.
+
+
+```python copy
+loaded_csms = parser.read_custom("csms.csv")
+```
+<Callout emoji="✓">
+```
+    Reading CSMs...: 100%|█████████████████████████████████████████████████████████████| 826/826 [00:00<00:00, 3392.79it/s]
+```
+</Callout>
+
+Using the function `parser.read_custom()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_custom.read_custom), [page](/docs/parsers/custom)\] we can the read back the data from the file...
+
+
+```python copy
+_ = transform.summary(loaded_csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+...which will give us back our original crosslink-spectrum-matches.
+
+### Serialization to Parquet
+
+
+```python copy
+transform.to_dataframe(xls).to_parquet("xls.parquet")
+```
+
+Serialization to tables is facilitated via the `transform.to_dataframe()` function \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.to_dataframe.to_dataframe)\] which returns a [pandas](https://pandas.pydata.org/) `DataFrame` and can then be saved to disk via one of the pandas functions.
+
+
+```python copy
+loaded_xls = parser.read_custom("xls.parquet")
+```
+<Callout emoji="✓">
+```
+    Reading crosslinks...: 100%|███████████████████████████████████████████████████████| 300/300 [00:00<00:00, 6181.46it/s]
+```
+</Callout>
+
+Using the function `parser.read_custom()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.parser_xldbse_custom.read_custom), [page](/docs/parsers/custom)\] we can the read back the data from the file...
+
+
+```python copy
+_ = transform.summary(loaded_xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+...which will give us back our original crosslinks.
+
+## Serialization to JSON
+
+All pyXLMS objects - including whole `parser_result` objects - are serializable to and de-serializable from [JavaScript Object Notation](https://www.json.org/) (JSON) using the standard python `json` library.
+
+
+```python copy
+import json
+from typing import Any
+
+
+def to_json(data: Any, filename: str) -> None:
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+    return
+
+
+to_json(csms, "csms.json")
+to_json(xls, "xls.json")
+to_json(parser_result, "pr.json")
+```
+
+We can serialize our crosslink-spectrum-matches, crosslinks, and `parser_result` using `json.dump()`...
+
+
+```python copy
+def from_json(filename: str) -> Any:
+    with open(filename, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+loaded_csms = from_json("csms.json")
+loaded_xls = from_json("xls.json")
+loaded_parser_result = from_json("pr.json")
+```
+
+...and we can de-serialize our JSON files again using `json.load()`...
+
+
+```python copy
+_ = transform.summary(loaded_csms)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+```
+</Callout>
+
+...which will give us back our original crosslink-spectrum-matches,...
+
+
+```python copy
+_ = transform.summary(loaded_xls)
+```
+<Callout emoji="✓">
+```
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+...crosslinks,...
+
+
+```python copy
+_ = transform.summary(loaded_parser_result)
+```
+<Callout emoji="✓">
+```
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+```
+</Callout>
+
+...and `parser_result`.

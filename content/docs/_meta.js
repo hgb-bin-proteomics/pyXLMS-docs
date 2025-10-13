@@ -7,5 +7,6 @@ export default {
   'transform': 'Data Transformation',
   'plotting': 'Creating Figures',
   'exporters': 'Exporting Data',
-  'pipeline': 'Pipelines'
+  'pipeline': 'Pipelines',
+  'serialization': 'Serialization'
 }
