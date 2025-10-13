@@ -1,0 +1,314 @@
+import { Callout } from 'nextra/components'
+
+# Streamlining Data Processing with pyXLMS Pipelines
+
+
+```python copy
+from pyXLMS import __version__
+
+print(f"Installed pyXLMS version: {__version__}")
+```
+<Callout emoji="✓">
+```
+    Installed pyXLMS version: 1.5.3
+```
+</Callout>
+
+
+```python copy
+from pyXLMS.pipelines import pipeline
+```
+
+The default pipeline - which can be easily adjusted - is available via the `pyXLMS.pipelines` submodule.
+
+
+> [!TIP]
+>
+> **We recommend reading the documentation and corresponding pages for `parser.read()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read), [page](/docs/parsers)\], `transform.unique()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique)\, [page](/docs/transform/aggregate)], `transform.validate()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate), [page](/docs/transform/validate)\], and `transform.targets_only()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.targets_only.targets_only), [page](/docs/transform/filter)\] beforehand for a better understanding!**
+
+## Running the Pipeline
+
+
+```python copy
+pr = pipeline(
+    "../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.xlsx",
+    engine="MS Annika",
+    crosslinker="DSS",
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|███████████████████████████████████████████████████| 826/826 [00:00<00:00, 5822.15it/s]
+    
+
+    ---- Summary statistics before pipeline ----
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.11
+    Maximum CSM score: 452.99
+    
+
+    Iterating over scores for FDR calculation...:  15%|██████▏                                   | 121/826 [00:00<?, ?it/s]
+
+    ---- Summary statistics after pipeline ----
+    Number of CSMs: 699.0
+    Number of unique CSMs: 699.0
+    Number of intra CSMs: 696.0
+    Number of inter CSMs: 3.0
+    Number of target-target CSMs: 699.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 34.19
+    Maximum CSM score: 452.99
+    ---- Performed pipeline steps ----
+    :: parser.read() ::
+    :: parser.read() :: params :: <params omitted>
+    :: transform.unique() ::
+    :: transform.unique() :: params :: by=peptide
+    :: transform.unique() :: params :: score=higher_better
+    :: transform.validate() ::
+    :: transform.validate() :: params :: fdr=0.01
+    :: transform.validate() :: params :: formula=D/T
+    :: transform.validate() :: params :: score=higher_better
+    :: transform.validate() :: params :: separate_intra_inter=False
+    :: transform.validate() :: params :: ignore_missing_labels=False
+    :: transform.targets_only() ::
+    :: transform.targets_only() :: params :: no params
+```
+</Callout>
+
+
+The `pipeline()` function runs a standard down-stream analysis pipeline for crosslink-spectrum-matches and/or crosslinks. The pipeline first reads a result file and subsequently optionally and by default filters the the read data for unique crosslinks and crosslink-spectrum-matches, optionally and by default the data is also validated by false discovery rate estimation and - also optionally and by default - only target-target matches are returned. Internally the pipeline calls `parser.read()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html#pyXLMS.parser.read), [page](/docs/parsers)\], `transform.unique()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique)\, [page](/docs/transform/aggregate)], `transform.validate()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate), [page](/docs/transform/validate)\], and `transform.targets_only()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.targets_only.targets_only), [page](/docs/transform/filter)\]. You can read more about the `pipeline()` function and all its parameters here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.pipelines.pipeline).
+
+
+> [!NOTE]
+>
+> **Various helpful pipeline information is also printed to `stdout`.**
+
+
+```python copy
+for k, v in pr.items():
+    print(f"{k}: {type(v) if isinstance(v, list) else v}")
+```
+<Callout emoji="✓">
+```
+    data_type: parser_result
+    completeness: partial
+    search_engine: MS Annika
+    crosslink-spectrum-matches: <class 'list'>
+    crosslinks: None
+```
+</Callout>
+
+The `pipeline()` method returns a `parser_result` object, exactly the same as all `parser.read*` methods. You can read more about that here: [**docs**](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.html#pyXLMS.data.create_parser_result), and here: [**data types specification**](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/data_types.md).
+
+## Adjusting the Pipeline
+
+
+```python copy
+pr = pipeline(
+    "../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_CSMs.xlsx",
+    engine="MS Annika",
+    crosslinker="DSS",
+    unique=True,
+    validate={"fdr": 0.01, "formula": "(TD-DD)/TT"},
+    targets_only=True,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|███████████████████████████████████████████████████| 826/826 [00:00<00:00, 5776.99it/s]
+    
+
+    ---- Summary statistics before pipeline ----
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.11
+    Maximum CSM score: 452.99
+    
+
+    Iterating over scores for FDR calculation...:  15%|██████▏                                   | 121/826 [00:00<?, ?it/s]
+
+    ---- Summary statistics after pipeline ----
+    Number of CSMs: 699.0
+    Number of unique CSMs: 699.0
+    Number of intra CSMs: 696.0
+    Number of inter CSMs: 3.0
+    Number of target-target CSMs: 699.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 34.19
+    Maximum CSM score: 452.99
+    ---- Performed pipeline steps ----
+    :: parser.read() ::
+    :: parser.read() :: params :: <params omitted>
+    :: transform.unique() ::
+    :: transform.unique() :: params :: by=peptide
+    :: transform.unique() :: params :: score=higher_better
+    :: transform.validate() ::
+    :: transform.validate() :: params :: fdr=0.01
+    :: transform.validate() :: params :: formula=(TD-DD)/TT
+    :: transform.validate() :: params :: score=higher_better
+    :: transform.validate() :: params :: separate_intra_inter=False
+    :: transform.validate() :: params :: ignore_missing_labels=False
+    :: transform.targets_only() ::
+    :: transform.targets_only() :: params :: no params
+```
+</Callout>
+
+
+The parameters `unique` and `validate` both either accept boolean values as input, where `False` would mean that the step is omitted from the pipeline, and `True` would mean that the step is run with default parameters. Or alternatively, they accept dictionaries of parameters for the underlying functions `transform.unique()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.aggregate.unique)\] and `transform.validate()` \[[docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.transform.html#pyXLMS.transform.validate.validate)\] in which case the pipeline steps are run with the provided parameters. The parameter `targets_only` only supports boolean values determining if the step should be applied or not. In this example crosslink-spectrum-matches are first read, then filtered for uniqueness (`unique=True`, the default value), validated for 1% false-discovery-rate (FDR) using the `(TD-DD)/TT` formula (`validate={"fdr": 0.01, "formula": "(TD-DD)/TT"}`), and finally filtered for only target-target matches (`targets_only=True`, the default value). Any additionaly parameters that are supplied to the `pipeline()` function will be passed to `parser.read()`.
+
+
+```python copy
+pr = pipeline(
+    "../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1_Crosslinks.xlsx",
+    engine="MS Annika",
+    crosslinker="DSS",
+    unique=True,
+    validate={"fdr": 0.01},
+    targets_only=True,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika crosslinks...: 100%|████████████████████████████████████████████| 300/300 [00:00<00:00, 11521.23it/s]
+    
+
+    ---- Summary statistics before pipeline ----
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.11
+    Maximum crosslink score: 452.99
+    
+
+    Iterating over scores for FDR calculation...:  25%|██████████▌                                | 74/300 [00:00<?, ?it/s]
+
+    ---- Summary statistics after pipeline ----
+    Number of crosslinks: 224.0
+    Number of unique crosslinks by peptide: 224.0
+    Number of unique crosslinks by protein: 224.0
+    Number of intra crosslinks: 223.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 224.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 52.92
+    Maximum crosslink score: 452.99
+    ---- Performed pipeline steps ----
+    :: parser.read() ::
+    :: parser.read() :: params :: <params omitted>
+    :: transform.unique() ::
+    :: transform.unique() :: params :: by=peptide
+    :: transform.unique() :: params :: score=higher_better
+    :: transform.validate() ::
+    :: transform.validate() :: params :: fdr=0.01
+    :: transform.validate() :: params :: formula=D/T
+    :: transform.validate() :: params :: score=higher_better
+    :: transform.validate() :: params :: separate_intra_inter=False
+    :: transform.validate() :: params :: ignore_missing_labels=False
+    :: transform.targets_only() ::
+    :: transform.targets_only() :: params :: no params
+```
+</Callout>
+
+
+Of course the pipeline works exactly the same for result files containing crosslinks!
+
+
+```python copy
+pr = pipeline(
+    "../data/ms_annika/XLpeplib_Beveridge_QEx-HFX_DSS_R1.pdResult",
+    engine="MS Annika",
+    crosslinker="DSS",
+    unique=True,
+    validate={"fdr": 0.01},
+    targets_only=True,
+)
+```
+<Callout emoji="✓">
+```
+    Reading MS Annika CSMs...: 100%|███████████████████████████████████████████████████| 826/826 [00:00<00:00, 5496.97it/s]
+    Reading MS Annika crosslinks...: 100%|████████████████████████████████████████████| 300/300 [00:00<00:00, 10106.84it/s]
+    
+
+    ---- Summary statistics before pipeline ----
+    Number of CSMs: 826.0
+    Number of unique CSMs: 826.0
+    Number of intra CSMs: 803.0
+    Number of inter CSMs: 23.0
+    Number of target-target CSMs: 786.0
+    Number of target-decoy CSMs: 39.0
+    Number of decoy-decoy CSMs: 1.0
+    Minimum CSM score: 1.1132827525593785
+    Maximum CSM score: 452.9861536355926
+    Number of crosslinks: 300.0
+    Number of unique crosslinks by peptide: 300.0
+    Number of unique crosslinks by protein: 298.0
+    Number of intra crosslinks: 279.0
+    Number of inter crosslinks: 21.0
+    Number of target-target crosslinks: 265.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 35.0
+    Minimum crosslink score: 1.1132827525593785
+    Maximum crosslink score: 452.9861536355926
+    
+
+    Iterating over scores for FDR calculation...:  15%|██████▏                                   | 121/826 [00:00<?, ?it/s]
+    Iterating over scores for FDR calculation...:  25%|███████▉                        | 74/300 [00:00<00:00, 36827.06it/s]
+
+    ---- Summary statistics after pipeline ----
+    Number of CSMs: 699.0
+    Number of unique CSMs: 699.0
+    Number of intra CSMs: 696.0
+    Number of inter CSMs: 3.0
+    Number of target-target CSMs: 699.0
+    Number of target-decoy CSMs: 0.0
+    Number of decoy-decoy CSMs: 0.0
+    Minimum CSM score: 34.188549584398956
+    Maximum CSM score: 452.9861536355926
+    Number of crosslinks: 224.0
+    Number of unique crosslinks by peptide: 224.0
+    Number of unique crosslinks by protein: 224.0
+    Number of intra crosslinks: 223.0
+    Number of inter crosslinks: 1.0
+    Number of target-target crosslinks: 224.0
+    Number of target-decoy crosslinks: 0.0
+    Number of decoy-decoy crosslinks: 0.0
+    Minimum crosslink score: 52.92422323424151
+    Maximum crosslink score: 452.9861536355926
+    ---- Performed pipeline steps ----
+    :: parser.read() ::
+    :: parser.read() :: params :: <params omitted>
+    :: transform.unique() ::
+    :: transform.unique() :: params :: by=peptide
+    :: transform.unique() :: params :: score=higher_better
+    :: transform.validate() ::
+    :: transform.validate() :: params :: fdr=0.01
+    :: transform.validate() :: params :: formula=D/T
+    :: transform.validate() :: params :: score=higher_better
+    :: transform.validate() :: params :: separate_intra_inter=False
+    :: transform.validate() :: params :: ignore_missing_labels=False
+    :: transform.targets_only() ::
+    :: transform.targets_only() :: params :: no params
+```
+</Callout>
+
+
+Result files and in general `parser_results` containing both crosslink-spectrum-matches and crosslinks are also supported!
