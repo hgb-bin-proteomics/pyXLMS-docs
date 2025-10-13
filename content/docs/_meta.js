@@ -6,5 +6,6 @@ export default {
   'parsers': 'Result File Reading',
   'transform': 'Data Transformation',
   'plotting': 'Creating Figures',
-  'exporters': 'Exporting Data'
+  'exporters': 'Exporting Data',
+  'pipeline': 'Pipelines'
 }
