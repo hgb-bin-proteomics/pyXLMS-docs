@@ -1,11 +1,67 @@
+import { Steps } from 'nextra/components'
+
 # Introduction
 
-WIP Overview
+The following sections will give you an overview of pyXLMS and get you familiar with
+using pyXLMS as a python package. It is assumed that pyXLMS is already installed
+on your system at this point, if not please refer to ➡️ [Installation](/docs/setup)!
 
+## Abbreviations
 
-Where to find notebooks
+The following abbreviations are commonly used throughout the documentation:
 
-Abbreviations
-CSMs
-XLs
-FDR
+- **CSMs**: Crosslink-Spectrum-Matches ➡️ Crosslink associated with a specific mass spectrum.
+- **XLs**: Crosslinks/residue pairs (_the two terms are used interchangeably_) ➡️ Two specific protein residues that are connected via a crosslinker.
+- **FDR**: False-Discovery-Rate ➡️ Commonly used quality metric in proteomics.
+
+## Following Along
+
+Most of the following pages are based on [jupyter](https://jupyter.org/) notebooks which are available from
+[here](https://github.com/hgb-bin-proteomics/pyXLMS/tree/master/examples).
+
+You can follow along via the following steps:
+
+<Steps>
+### Install [jupyter](https://jupyter.org/)
+
+```bash copy
+pip install jupyterlab
+```
+
+### Clone the [pyXLMS repository](https://github.com/hgb-bin-proteomics/pyXLMS) 
+
+```bash copy
+git clone --depth 1 https://github.com/hgb-bin-proteomics/pyXLMS.git 
+```
+
+### Change to the pyXLMS directory
+
+```bash copy
+cd pyXLMS
+```
+
+### Launch JupyterLab
+
+```bash copy
+jupyter lab
+```
+
+### Run example notebooks
+
+- Navigate to the notebook you want to run in the JupyterLab file browser and open it.
+- Execute the cells from top to bottom.
+
+</Steps>
+
+## Introductory Content
+
+The **Working with pyXLMS** section will introduce you to the
+supported crosslink search engines and input formats \[[page](/docs/basics/supported_io#supported-search-engines-and-formats)\]
+as well as supported output formats and down-stream analysis tools \[[page](/docs/basics/supported_io#supported-export-formats)\].
+Moreover it will give an overview on how pyXLMS stores and encodes data as well as how to access that data \[[page](/docs/basics/data_types)\].
+The pyXLMS specific file format for CSMs and XLs will also be introduced here \[[page](/docs/basics/format)\].
+Finally, the section closes with instructions on how to create CSMs and XLs \[[page](/docs/basics/data)\].
+
+> [!TIP]
+>
+> **We recommend reading through the whole `Working with pyXLMS` section which will make understanding of subsequent sections substantially easier!**
