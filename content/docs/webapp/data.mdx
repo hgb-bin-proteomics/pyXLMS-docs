@@ -12,7 +12,8 @@ import { Steps } from 'nextra/components'
 
 The first step when using the pyXLMS web application is that you need to upload
 one or more result files containing crosslink-spectrum-matches (CSMs) or crosslinks/residue
-pairs (XLs). You can find a list of supported crosslink search engines and input formats
+pairs (XLs) in the `Load Data` tab. You can find a list of supported crosslink search engines
+and input formats
 [here](https://github.com/hgb-bin-proteomics/pyXLMS/blob/master/docs/supported_io.md).
 We also provide some example files via the
 [pyXLMS GitHub repository](https://github.com/hgb-bin-proteomics/pyXLMS/tree/master/data)
@@ -48,56 +49,56 @@ button!
 
 ## [Optional] Pre-Processing Results
 
+pyXLMS offers several different pre-processing steps as outlined below.
+
 ![png](./webapp_files/data_2.png)
 
 <Steps>
 
-### Pre-Processing Steps
+### [Optionally] Apply One or More Pre-Processing Steps
 
-pyXLMS offers several different pre-processing steps as outlined below.
+- **Parse Modifications**
 
-### Parse Modifications
+  Enabling this option will try to parse post-translation-modifications (PTMs) of
+  your CSMs from your result files.
 
-Enabling this option will try to parse post-translation-modifications (PTMs) of
-your CSMs from your result files.
+  > [!NOTE]
+  >
+  > **Please note that the pyXLMS web app only supports a limited set of the most common**
+  > **PTMs! If parsing fails it is better to leave this option turned off and use the pyXLMS**
+  > **python package directly which gives a more nuanced control over modifications!**
 
-> [!NOTE]
->
-> **Please note that the pyXLMS web app only supports a limited set of the most common**
-> **PTMs! If parsing fails it is better to leave this option turned off and use the pyXLMS**
-> **python package directly which gives a more nuanced control over modifications!**
+- **Re-Annotate Crosslink Positions**
 
-### Re-Annotate Crosslink Positions
+  This option will allow you to upload a FASTA file to re-annotate the protein crosslink
+  positions of your CSMs and XLs based on the given FASTA file. This might be useful if
+  the annotation is missing because it was not given by the crosslink search engine, or
+  if the crosslink search engine annotated something wrongly.
 
-This option will allow you to upload a FASTA file to re-annotate the protein crosslink
-positions of your CSMs and XLs based on the given FASTA file. This might be useful if
-the annotation is missing because it was not given by the crosslink search engine, or
-if the crosslink search engine annotated something wrongly.
+- **Filtering for Unique CSMs and XLs**
 
-### Filtering for Unique CSMs and XLs
+  If turned on this option will filter out any non-unique CSMs and XLs from your results.
+  A crosslink is considered unique if its sequence and peptide crosslink positions are
+  unique (option 1) or if its protein crosslink positions are unique (option 2) - these
+  options are controlled via the `Group crosslinks by` selector.
 
-If turned on this option will filter out any non-unique CSMs and XLs from your results.
-A crosslink is considered unique if its sequence and peptide crosslink positions are
-unique (option 1) or if its protein crosslink positions are unique (option 2) - these
-options are controlled via the `Group crosslinks by` selector.
+- **Validation via FDR Estimation**
 
-### Validation via FDR Estimation
+  Enabling this option will validate your results for a given target false-discover-rate (FDR)
+  via FDR estimation and will only keep CSMs and XLs that fall within the target FDR.
 
-Enabling this option will validate your results for a given target false-discover-rate (FDR)
-via FDR estimation and will only keep CSMs and XLs that fall within the target FDR.
+- **Filtering for Target Matches**
 
-### Filtering for Target Matches
+  If applied this option will filter out any CSMs and XLs that are not target-target matches.
 
-If applied this option will filter out any CSMs and XLs that are not target-target matches.
+- **Aggregation of CSMs to XLs**
 
-### Aggregation of CSMs to XLs
+  Whether or not your CSMs (if there are any) should be aggregated to XLs.
 
-Whether or not your CSMs (if there are any) should be aggregated to XLs.
+- **Validation of Aggregated XLs**
 
-### Validation of Aggregated XLs
-
-Controls if your aggregated XLs from the previous pre-processing step should also be validated
-via FDR estimation. Shares the same settings as [Validation via FDR Estimation](#validation-via-fdr-estimation).
+  Controls if your aggregated XLs from the previous pre-processing step should also be validated
+  via FDR estimation. Shares the same settings as [Validation via FDR Estimation](#validation-via-fdr-estimation).
 
 ### Reading the Results
 
