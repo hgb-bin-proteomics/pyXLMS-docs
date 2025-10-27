@@ -6,5 +6,6 @@ export default {
   'to_proxl': 'Exporting Crosslink-Spectrum-Matches to ProXL',
   'to_pyxlinkviewer': 'Exporting Crosslinks to PyXlinkViewer',
   'to_xifdr': 'Exporting Crosslink-Spectrum-Matches to xiFDR',
-  'to_xinet_xiview': 'Exporting Crosslinks to xiNET and xiVIEW'
+  'to_xinet_xiview': 'Exporting Crosslinks to xiNET and xiVIEW',
+  'to_xlinkdb': 'Exporting Crosslinks to XLinkDB'
 }
