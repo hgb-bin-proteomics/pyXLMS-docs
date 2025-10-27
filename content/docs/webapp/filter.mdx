@@ -1,5 +1,34 @@
 # Filtering Results
 
-PLACEHOLDER
+The `Filter` tab offers some additional filtering options:
 
 ![png](./webapp_files/filter_1.png)
+
+## Filter Options
+
+### Filter by Protein Accession
+
+Select your proteins of interest from the dropdown menu. Any CSM or XL that does not
+have at least one peptide corresponding to one of the selected proteins will be filtered
+out. Leaving this option blank will not apply the filter.
+
+### Filter by Crosslink Type
+
+Select which type of crosslinks you are interested. Leaving this option blank will not
+apply the filter.
+
+### Filter by Target-Decoy Type
+
+Select which database match types you are interested in. Option `Target-Decoy`
+corresponds to both "Target-Decoy" and "Decoy-Target" matches. Leaving this option
+blank will not apply the filter.
+
+> [!IMPORTANT]
+>
+> **Please note that this filter will remove any CSMs and XLs that have missing target-decoy labels!**
+
+
+## Inspect Your Filtered Results
+
+After hitting the `Filter results!` button the data at the bottom of the page will update
+and display your current CSMs and/or XLs and/or aggregated XLs after the filtering.

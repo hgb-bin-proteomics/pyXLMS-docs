@@ -1,9 +1,31 @@
 # Visualizing Results
 
-PLACEHOLDER
+The `Visualize` tab will show some basic plots for your CSMs and/or XLs and/or
+aggregated XLs.
+
+> [!NOTE]
+>
+> **Please note that the visualizations are heavily influenced by your pre-processing**
+> **and filtering steps! E.g. filtering for target matches will obviously mean that**
+> **`Target and Decoy` plots will only show target-target matches!**
 
 ![png](./webapp_files/viz_1.png)
 
+- The `Target and Decoy Distribution` plot will show the number of "Target-Target",
+  "Target-Decoy" and "Decoy-Decoy" matches in your results.
+- The `Target and Decoy Score Distribution` plot will show the score distribution
+  of "Target-Target", "Target-Decoy" and "Decoy-Decoy" matches in your results.
+
 ![png](./webapp_files/viz_2.png)
 
+- The `Crosslink Type Distribution` plot will show the number of intra- and inter-links
+  in your results.
+- The `Protein Distribution` plot will show the top `n` proteins with the most crosslink
+  evidence in terms of number of CSMs/XLs. It additionally shows the number of intra-
+  and inter-links per protein. The `n` parameter is controlled via the `Visualization Parameters`
+  section at the top of the page.
+
 ![png](./webapp_files/viz_3.png)
+
+- The `Peptide Pair Distribution` plot is only available for CSMs and show the most frequently
+  observed peptide pairs in your CSMs.
