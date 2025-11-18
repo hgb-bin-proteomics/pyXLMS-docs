@@ -87,6 +87,12 @@ pyXLMS offers several different pre-processing steps as outlined below.
   Enabling this option will validate your results for a given target false-discover-rate (FDR)
   via FDR estimation and will only keep CSMs and XLs that fall within the target FDR.
 
+  > [!IMPORTANT]
+  >
+  > **We recommend uploading results that are already validated in the crosslink search engine**
+  > **of your choice. Validation in pyXLMS uses a generic target-decoy approach with a single score**
+  > **that might not yield the same results as the search engine specific validation!**
+
 - **Filtering for Target Matches**
 
   If applied this option will filter out any CSMs and XLs that are not target-target matches.

@@ -76,6 +76,12 @@ The function has 6 possible parameters:
 
 Except for `data` all other parameters are optional with sensible defaults in place to stricly validate results. The `data` parameter supports lists of crosslink-spectrum-matches or crosslinks as input, or a complete `parser_result`. If a list of crosslink-spectrum-matches was provided, `validate()` will return a list of validated crosslink-spectrum-matches. If a list of crosslinks was provided, `validate()` will return a list of validated crosslinks. If a `parser_result` was provided, `validate()` will return a `parser_result` where all elements are validated.
 
+> [!IMPORTANT]
+>
+> **We recommend using results that are already validated in the crosslink search engine of your choice. Validation in pyXLMS uses**
+> **a generic target-decoy approach with a single score that might not yield the same results as the search engine specific validation!**
+> **We also recommend reading the limitations of the specific crosslink search engine result parsers in the [API docs](https://hgb-bin-proteomics.github.io/pyXLMS/pyXLMS.parser.html).**
+
 ## Validating Crosslink-Spectrum-Matches
 
 
