@@ -321,6 +321,11 @@ parser_result = parser.read(
 
 Last but not least you can also directly read a `pdResult` from Proteome Discoverer which will automatically read all CSMs and crosslinks detected with XlinkX.
 
+> [!WARNING]
+>
+> **Reading a `pdResult` file will read all target-target crosslink-spectrum-matches and crosslinks from the file. This includes results that do not match the target FDR!**
+> **Because there are no decoy matches it is also not possible to validate these results with pyXLMS!**
+
 *****
 
 ## Reading XlinkX Result Files via `parser.read_xlinkx()`
